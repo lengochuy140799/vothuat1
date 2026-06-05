@@ -24,6 +24,7 @@
         <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
         <springdoc.version>2.5.0</springdoc.version>
         <jjwt.version>0.12.5</jjwt.version>
+        <flyway.version>10.11.0</flyway.version>
     </properties>
 
     <dependencies>
@@ -58,6 +59,7 @@
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-database-postgresql</artifactId>
+            <version>${flyway.version}</version>
         </dependency>
 
         <!-- Lombok -->

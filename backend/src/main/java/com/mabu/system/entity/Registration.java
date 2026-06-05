@@ -2,6 +2,7 @@ package com.mabu.system.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -32,7 +33,7 @@ public class Registration {
     private String targetBelt;
 
     @Column(name = "exam_fee", nullable = false)
-    private Double examFee;
+    private BigDecimal examFee;
 
     @Column(name = "payment_status", nullable = false, length = 20)
     private String paymentStatus; // 'PAID' | 'UNPAID'

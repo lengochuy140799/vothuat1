@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
+import java.math.BigDecimal;
 
 @Data
 @NoArgsConstructor
@@ -27,7 +28,7 @@ public class RegistrationDTO {
     private String targetBelt;
 
     @NotNull(message = "Lệ phí thi không được để trống")
-    private Double examFee;
+    private BigDecimal examFee;
 
     @NotBlank(message = "Trạng thái thanh toán không được để trống")
     @Pattern(regexp = "PAID|UNPAID", message = "Trạng thái thanh toán phải là PAID hoặc UNPAID")
