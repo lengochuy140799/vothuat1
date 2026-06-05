@@ -33,5 +33,7 @@ public class StudentDTO {
     @NotBlank(message = "Ngày nhập học không được để trống")
     private String registrationDate;
 
+    private String address;
+
     private String createdAt;
 }

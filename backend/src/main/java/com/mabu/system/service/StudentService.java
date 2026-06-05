@@ -53,6 +53,7 @@ public class StudentService {
         student.setPhone(dto.getPhone());
         student.setCurrentBelt(dto.getCurrentBelt());
         student.setRegistrationDate(dto.getRegistrationDate());
+        student.setAddress(dto.getAddress());
         
         Student updated = studentRepository.save(student);
         return studentMapper.toDTO(updated);

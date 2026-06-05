@@ -35,6 +35,9 @@ public class Student {
     @Column(name = "registration_date", nullable = false, length = 50)
     private String registrationDate;
 
+    @Column(name = "address", length = 255)
+    private String address;
+
     @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
 }
