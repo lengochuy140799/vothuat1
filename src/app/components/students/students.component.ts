@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Student } from '../../../types';
 import { IconComponent } from '../icon/icon.component';
 import { ExcelExporter } from '../../utils/excel-helper';
+import { ApiService } from '../../services/api.service';
 import * as XLSX from 'xlsx';
 
 export interface MonthlyBilling {
@@ -80,11 +81,51 @@ export class StudentsComponent implements OnInit {
   formNewMonthValue: string = '';
   copyFromPreviousMonth: boolean = true;
 
+  constructor(private apiService: ApiService) {}
+
   ngOnInit() {
     this.initializeMonthlyData();
   }
 
   initializeMonthlyData() {
+    this.apiService.getTuitions().subscribe({
+      next: (list) => {
+        if (list && list.length > 0) {
+          const db: { [key: string]: MonthlyBilling[] } = {};
+          list.forEach(item => {
+            const m = item.month;
+            if (!db[m]) {
+              db[m] = [];
+            }
+            db[m].push({
+              studentId: item.studentId,
+              status: item.status as any,
+              fee: Number(item.fee),
+              isDeleted: item.isDeleted || false
+            });
+          });
+          this.tuitionDb = db;
+        } else {
+          this.loadFromLocalStorageOrDefaults();
+        }
+
+        // fallback activeMonth if list is empty
+        const months = this.getMonths();
+        if (months.length > 0 && !months.includes(this.activeMonth)) {
+          this.activeMonth = months[months.length - 1];
+        }
+      },
+      error: () => {
+        this.loadFromLocalStorageOrDefaults();
+        const months = this.getMonths();
+        if (months.length > 0 && !months.includes(this.activeMonth)) {
+          this.activeMonth = months[months.length - 1];
+        }
+      }
+    });
+  }
+
+  loadFromLocalStorageOrDefaults() {
     const stored = localStorage.getItem('mabu_tuition_db_v2');
     if (stored) {
       try {
@@ -95,43 +136,37 @@ export class StudentsComponent implements OnInit {
     } else {
       this.loadDefaultTuitionDb();
     }
-
-    // fallback activeMonth if list is empty
-    const months = this.getMonths();
-    if (months.length > 0 && !months.includes(this.activeMonth)) {
-      this.activeMonth = months[months.length - 1];
-    }
   }
 
   loadDefaultTuitionDb() {
     this.tuitionDb = {
       "04/2026": [
-        { studentId: 'VS-2026-001', status: 'Đã đóng', fee: 400000 },
-        { studentId: 'VS-2026-002', status: 'Đã đóng', fee: 400000 },
-        { studentId: 'VS-2026-003', status: 'Chưa đóng', fee: 400000 },
-        { studentId: 'VS-2026-004', status: 'Đã đóng', fee: 400000 },
-        { studentId: 'VS-2026-005', status: 'Chưa đóng', fee: 400000 }
+        { studentId: 'HV-2026-001', status: 'Đã đóng', fee: 400000 },
+        { studentId: 'HV-2026-002', status: 'Đã đóng', fee: 400000 },
+        { studentId: 'HV-2026-003', status: 'Chưa đóng', fee: 400000 },
+        { studentId: 'HV-2026-004', status: 'Đã đóng', fee: 400000 },
+        { studentId: 'HV-2026-005', status: 'Chưa đóng', fee: 400000 }
       ],
       "05/2026": [
-        { studentId: 'VS-2026-001', status: 'Đã đóng', fee: 400000 },
-        { studentId: 'VS-2026-002', status: 'Đã đóng', fee: 400000 },
-        { studentId: 'VS-2026-003', status: 'Đã đóng', fee: 400000 },
-        { studentId: 'VS-2026-004', status: 'Đã đóng', fee: 400000 },
-        { studentId: 'VS-2026-005', status: 'Chưa đóng', fee: 400000 },
-        { studentId: 'VS-2026-006', status: 'Đã đóng', fee: 400000 },
-        { studentId: 'VS-2026-007', status: 'Chưa đóng', fee: 400000 }
+        { studentId: 'HV-2026-001', status: 'Đã đóng', fee: 400000 },
+        { studentId: 'HV-2026-002', status: 'Đã đóng', fee: 400000 },
+        { studentId: 'HV-2026-003', status: 'Đã đóng', fee: 400000 },
+        { studentId: 'HV-2026-004', status: 'Đã đóng', fee: 400000 },
+        { studentId: 'HV-2026-005', status: 'Chưa đóng', fee: 400000 },
+        { studentId: 'HV-2026-006', status: 'Đã đóng', fee: 400000 },
+        { studentId: 'HV-2026-007', status: 'Chưa đóng', fee: 400000 }
       ],
       "06/2026": [
-        { studentId: 'VS-2026-001', status: 'Chưa đóng', fee: 400000 },
-        { studentId: 'VS-2026-002', status: 'Đã đóng', fee: 400000 },
-        { studentId: 'VS-2026-003', status: 'Đã đóng', fee: 400000 },
-        { studentId: 'VS-2026-004', status: 'Chưa đóng', fee: 400000 },
-        { studentId: 'VS-2026-005', status: 'Đã đóng', fee: 400000 },
-        { studentId: 'VS-2026-006', status: 'Chưa đóng', fee: 400000 },
-        { studentId: 'VS-2026-007', status: 'Đã đóng', fee: 400000 },
-        { studentId: 'VS-2026-008', status: 'Đã đóng', fee: 400000 },
-        { studentId: 'VS-2026-009', status: 'Chưa đóng', fee: 400000 },
-        { studentId: 'VS-2026-010', status: 'Đã đóng', fee: 500000 }
+        { studentId: 'HV-2026-001', status: 'Chưa đóng', fee: 400000 },
+        { studentId: 'HV-2026-002', status: 'Đã đóng', fee: 400000 },
+        { studentId: 'HV-2026-003', status: 'Đã đóng', fee: 400000 },
+        { studentId: 'HV-2026-004', status: 'Chưa đóng', fee: 400000 },
+        { studentId: 'HV-2026-005', status: 'Đã đóng', fee: 400000 },
+        { studentId: 'HV-2026-006', status: 'Chưa đóng', fee: 400000 },
+        { studentId: 'HV-2026-007', status: 'Đã đóng', fee: 400000 },
+        { studentId: 'HV-2026-008', status: 'Đã đóng', fee: 400000 },
+        { studentId: 'HV-2026-009', status: 'Chưa đóng', fee: 400000 },
+        { studentId: 'HV-2026-010', status: 'Đã đóng', fee: 500000 }
       ]
     };
     this.saveTuitionDb();
@@ -180,24 +215,32 @@ export class StudentsComponent implements OnInit {
       return;
     }
 
+    const sortedMonths = this.getMonths();
+    const prevMonthKey = sortedMonths.length > 0 ? sortedMonths[sortedMonths.length - 1] : null;
+
     let clonedRecords: MonthlyBilling[] = [];
-    if (this.copyFromPreviousMonth) {
-      const sortedMonths = this.getMonths();
-      if (sortedMonths.length > 0) {
-        const prevMonthKey = sortedMonths[sortedMonths.length - 1];
-        const prevRecords = this.tuitionDb[prevMonthKey] || [];
-        clonedRecords = prevRecords
-          .filter(r => !r.isDeleted)
-          .map(r => ({
-            studentId: r.studentId,
-            status: 'Chưa đóng' as const, // Reset payment state to Unpaid for new month
-            fee: r.fee
-          }));
-      }
+    if (this.copyFromPreviousMonth && prevMonthKey) {
+      const prevRecords = this.tuitionDb[prevMonthKey] || [];
+      clonedRecords = prevRecords
+        .filter(r => !r.isDeleted)
+        .map(r => ({
+          studentId: r.studentId,
+          status: 'Chưa đóng' as const, // Reset payment state to Unpaid for new month
+          fee: r.fee
+        }));
     }
 
     this.tuitionDb[newMonthKey] = clonedRecords;
     this.saveTuitionDb();
+
+    // Sync clone to backend DB
+    if (this.copyFromPreviousMonth && prevMonthKey) {
+      this.apiService.cloneTuitionMonth(newMonthKey, prevMonthKey).subscribe({
+        next: () => console.log('Successfully cloned tuition month in database'),
+        error: (err) => console.error('Failed to sync cloned tuition month in DB:', err)
+      });
+    }
+
     this.activeMonth = newMonthKey;
     this.studentCurrentPage = 1;
     this.isAddMonthModalOpen = false;
@@ -205,34 +248,12 @@ export class StudentsComponent implements OnInit {
   }
 
   syncMonthStudents() {
-    if (!this.tuitionDb[this.activeMonth]) {
-      this.tuitionDb[this.activeMonth] = [];
-    }
-
-    const currentRecords = this.tuitionDb[this.activeMonth];
-    const existingIds = new Set(currentRecords.map(r => r.studentId));
-
-    let modified = false;
-    this.students.forEach(s => {
-      if (!existingIds.has(s.id)) {
-        currentRecords.push({
-          studentId: s.id,
-          status: 'Chưa đóng',
-          fee: 400000
-        });
-        modified = true;
-      }
-    });
-
-    if (modified) {
-      this.saveTuitionDb();
-    }
+    // Left empty purposely as "mỗi tháng có võ sinh riêng" layout is requested,
+    // avoiding automatic pool mirroring that pollutes separate months.
   }
 
   // Active items for activeMonth
   getActiveMonthItems(): MonthlyBillingItem[] {
-    this.syncMonthStudents();
-
     const records = this.tuitionDb[this.activeMonth] || [];
     const items: MonthlyBillingItem[] = [];
 
@@ -334,23 +355,38 @@ export class StudentsComponent implements OnInit {
     const records = this.tuitionDb[this.activeMonth] || [];
     if (records[item.monthRecordIdx]) {
       const current = records[item.monthRecordIdx].status;
-      records[item.monthRecordIdx].status = current === 'Đã đóng' ? 'Chưa đóng' : 'Đã đóng';
+      const newStatus = current === 'Đã đóng' ? 'Chưa đóng' : 'Đã đóng';
+      records[item.monthRecordIdx].status = newStatus;
       this.saveTuitionDb();
+
+      // Sync update to backend
+      const studentId = records[item.monthRecordIdx].studentId;
+      const tuiId = `TUI-${this.activeMonth.replace("/", "")}-${studentId.replace("-", "")}`;
+      this.apiService.updateTuition(tuiId, {
+        studentId: studentId,
+        month: this.activeMonth,
+        status: newStatus,
+        fee: records[item.monthRecordIdx].fee
+      }).subscribe({
+        next: () => console.log('Successfully toggled tuition status in DB'),
+        error: (err) => console.error('Failed to sync toggle tuition status in DB:', err)
+      });
+
       this.notify.emit(`Đã cập nhật trạng thái học phí của ${item.name}`);
     }
   }
 
   generateNewId(): string {
     const maxNum = this.students.reduce((max, s) => {
-      const match = s.id.match(/VS-\d+-(\d+)/);
+      const match = s.id.match(/(HV|VS)-\d+-(\d+)/);
       if (match) {
-        const num = parseInt(match[1]);
+        const num = parseInt(match[2]);
         return num > max ? num : max;
       }
       return max;
     }, 0);
     const nextNumString = String(maxNum + 1).padStart(3, '0');
-    return `VS-2026-${nextNumString}`;
+    return `HV-2026-${nextNumString}`;
   }
 
   openAddForm() {
@@ -423,6 +459,18 @@ export class StudentsComponent implements OnInit {
         rec.fee = this.formFee;
         rec.status = this.formTuitionStatus;
         this.saveTuitionDb();
+
+        // Sync update to backend
+        const tuiId = `TUI-${this.activeMonth.replace("/", "")}-${studentData.id.replace("-", "")}`;
+        this.apiService.updateTuition(tuiId, {
+          studentId: studentData.id,
+          month: this.activeMonth,
+          status: this.formTuitionStatus,
+          fee: this.formFee
+        }).subscribe({
+          next: () => console.log('Successfully updated tuition in DB'),
+          error: (err) => console.error('Failed to sync tuition update in DB:', err)
+        });
       }
 
       this.notify.emit(`Đã cập nhật thông tin võ sinh ${this.formName}`);
@@ -446,6 +494,18 @@ export class StudentsComponent implements OnInit {
       });
       this.saveTuitionDb();
 
+      // Sync creation to backend DB
+      const tuitionPayload = {
+        studentId: studentData.id,
+        month: this.activeMonth,
+        status: this.formTuitionStatus,
+        fee: this.formFee
+      };
+      this.apiService.addTuition(tuitionPayload).subscribe({
+        next: (savedTuition) => console.log('Successfully saved tuition to database:', savedTuition),
+        error: (err) => console.error('Failed to sync tuition to database:', err)
+      });
+
       this.notify.emit(`Đã ghi danh và cập nhật bách khoa học phí võ sinh ${this.formName}`);
     }
     this.closeFormModal();
@@ -457,6 +517,14 @@ export class StudentsComponent implements OnInit {
       if (records[item.monthRecordIdx]) {
         records[item.monthRecordIdx].isDeleted = true;
         this.saveTuitionDb();
+
+        // Sync soft-delete to backend
+        const tuiId = `TUI-${this.activeMonth.replace("/", "")}-${item.id.replace("-", "")}`;
+        this.apiService.deleteTuition(tuiId).subscribe({
+          next: () => console.log('Successfully soft-deleted tuition in DB'),
+          error: (err) => console.error('Failed to sync soft-delete to DB:', err)
+        });
+
         this.notify.emit(`Đã xóa mềm võ sinh ${item.name} khỏi Tháng ${this.activeMonth}`);
         this.studentCurrentPage = 1;
       }

@@ -13,4 +13,6 @@ public interface RegistrationRepository extends JpaRepository<Registration, Stri
 
     @Query("SELECT r FROM Registration r JOIN FETCH r.student JOIN FETCH r.examSession WHERE r.examSession.id = :sessionId ORDER BY r.createdAt DESC")
     List<Registration> findBySessionIdWithDetails(@Param("sessionId") String sessionId);
+
+    boolean existsByStudentIdAndExamSessionId(String studentId, String examSessionId);
 }

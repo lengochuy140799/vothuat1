@@ -69,4 +69,26 @@ export class ApiService {
   updateRegistrationNotes(id: string, notes: string): Observable<Registration> {
     return this.http.patch<Registration>(`${this.baseUrl}/registrations/${id}/notes`, { notes });
   }
+
+  // --- Tuitions APIs ---
+  getTuitions(month?: string): Observable<any[]> {
+    const url = month ? `${this.baseUrl}/tuitions?month=${encodeURIComponent(month)}` : `${this.baseUrl}/tuitions`;
+    return this.http.get<any[]>(url);
+  }
+
+  addTuition(tuition: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/tuitions`, tuition);
+  }
+
+  updateTuition(id: string, tuition: any): Observable<any> {
+    return this.http.put<any>(`${this.baseUrl}/tuitions/${id}`, tuition);
+  }
+
+  deleteTuition(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/tuitions/${id}`);
+  }
+
+  cloneTuitionMonth(currentMonth: string, prevMonth: string): Observable<any[]> {
+    return this.http.post<any[]>(`${this.baseUrl}/tuitions/clone?currentMonth=${encodeURIComponent(currentMonth)}&prevMonth=${encodeURIComponent(prevMonth)}`, {});
+  }
 }

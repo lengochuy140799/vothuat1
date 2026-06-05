@@ -45,6 +45,10 @@ public class RegistrationService {
             throw new IllegalArgumentException("Mã đăng ký '" + dto.getId() + "' đã tồn tại!");
         }
 
+        if (registrationRepository.existsByStudentIdAndExamSessionId(dto.getStudentId(), dto.getExamSessionId())) {
+            throw new IllegalArgumentException("Võ sinh này đã có hồ sơ đăng ký dự thi trong kỳ này rồi!");
+        }
+
         Student student = studentRepository.findById(dto.getStudentId())
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy học viên với mã: " + dto.getStudentId()));
 
