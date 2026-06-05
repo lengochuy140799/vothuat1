@@ -103,8 +103,8 @@ export class FeesComponent implements OnChanges {
       return;
     }
     const filenameId = this.activeSession ? this.activeSession.id : this.activeSessionId;
-    ExcelExporter.exportExamRegistrationsToCsv(this.activeSessionRegs, this.students, `${filenameId}_Bao_Cao_Thu_Chi`);
-    this.notify.emit(`Đã xuất báo cáo thu chi đợt thi ${this.activeSessionId} thành công!`);
+    ExcelExporter.exportExamRegistrationsToExcel(this.activeSessionRegs, this.students, `${filenameId}_Bao_Cao_Thu_Chi`);
+    this.notify.emit(`Đã xuất báo cáo thu chi đợt thi ${this.activeSessionId} định dạng Excel (.xlsx) thành công!`);
   }
 
   formatCurrency(value: number): string {

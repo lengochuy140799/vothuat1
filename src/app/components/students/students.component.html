@@ -12,7 +12,7 @@
         class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-extrabold px-4 py-2.5 rounded-xl text-xs transition flex items-center gap-2 cursor-pointer shadow-sm"
       >
         <app-icon name="download" class="w-4 h-4"></app-icon>
-        <span>XUẤT DANH SÁCH CSV</span>
+        <span>XUẤT DANH SÁCH EXCEL</span>
       </button>
 
       <button 
@@ -20,7 +20,7 @@
         class="bg-indigo-50 border border-indigo-150 hover:bg-indigo-100 text-indigo-700 font-extrabold px-4 py-2.5 rounded-xl text-xs transition flex items-center gap-2 cursor-pointer shadow-sm"
       >
         <app-icon name="upload" class="w-4 h-4"></app-icon>
-        <span>NHẬP BULK CSV</span>
+        <span>NHẬP DANH SÁCH EXCEL</span>
       </button>
 
       <button 
@@ -278,13 +278,13 @@
     </div>
   </div>
 
-  <!-- Bulk CSV Import Modal -->
+  <!-- Bulk Excel Import Modal -->
   <div *ngIf="isImportModalOpen" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
     <div class="bg-white rounded-2xl shadow-xl max-w-2xl w-full overflow-hidden border border-slate-100 animate-slideUp">
       <div class="bg-slate-900 text-white px-6 py-4 flex items-center justify-between">
         <h3 class="font-bold text-base flex items-center gap-2">
           <app-icon name="upload" class="w-5 h-5 text-indigo-400"></app-icon>
-          <span>Nạp Nhanh Võ Sinh Bằng Excel (CSV)</span>
+          <span>Nạp Nhanh Võ Sinh Bằng Excel / Clipboard</span>
         </h3>
         <button (click)="closeImportModal()" class="text-slate-400 hover:text-white transition cursor-pointer">
           <app-icon name="x" class="w-5 h-5"></app-icon>
@@ -292,22 +292,58 @@
       </div>
 
       <div class="p-6 space-y-4 text-xs font-semibold font-sans">
-        <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl text-slate-500 font-medium">
-          <p class="font-bold text-slate-700 text-xs mb-1">Quy định cấu trúc dán CSV:</p>
-          <p>Dòng đầu là tiêu đề (được bỏ qua). Mỗi dòng tiếp theo có dạng:</p>
-          <code class="block bg-slate-800 text-emerald-450 p-2 text-[10px] rounded mt-2 font-mono select-all">
-            STT,Mã Võ Sinh,Họ Và Tên,Giới Tính,Ngày Sinh,Số Điện Thoại Phụ Huynh,Cấp Đai Hiện Tại,Ngày Đăng Ký<br/>
-            1,VS-2026-015,Nguyễn Quốc Bình,Nam,2014-05-12,0914115115,Trắng,2026-06-05
-          </code>
+        <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl text-slate-650 font-medium">
+          <p class="font-bold text-slate-800 text-xs mb-1.5 flex items-center gap-1.5">
+            <app-icon name="info" class="w-4 h-4 text-indigo-600"></app-icon>
+            HƯỚNG DẪN HOẶC TẢI EXCEL MẪU:
+          </p>
+          <p class="text-[11px] text-slate-500">
+            Hệ thống hỗ trợ nhập liệu trực tiếp từ tệp Excel (.xlsx). Để đảm bảo tính nhất quán của dữ liệu, bạn vui lòng tải tệp Excel mẫu bên dưới và điền đúng cấu trúc tiêu đề.
+          </p>
+          
+          <button 
+            type="button"
+            (click)="downloadExcelTemplate()"
+            class="mt-2.5 bg-indigo-600 hover:bg-indigo-750 text-white font-bold px-3 py-1.5 rounded-lg text-[10px] transition flex items-center gap-1.5 cursor-pointer shadow-sm"
+          >
+            <app-icon name="download" class="w-3.5 h-3.5"></app-icon>
+            TẢI FILE EXCEL MẪU (.XLSX)
+          </button>
         </div>
 
+        <!-- 1. File Upload Section -->
+        <div class="border-b border-slate-100 pb-4">
+          <label class="block text-[10px] font-bold text-indigo-950 uppercase tracking-widest mb-1.5">CÁCH 1: CHỌN / THẢ FILE EXCEL TRỰC TIẾP:</label>
+          <div class="flex items-center gap-3">
+            <label class="flex-1 border-2 border-dashed border-slate-200 hover:border-indigo-400 bg-slate-50/50 hover:bg-white rounded-xl p-5 flex flex-col items-center justify-center cursor-pointer transition">
+              <app-icon name="file-text" class="w-8 h-8 text-indigo-500 mb-1.5"></app-icon>
+              <span class="text-xs font-extrabold text-slate-700">
+                {{ selectedImportFileName || 'Nhấp chọn hoặc kéo thả file Excel tại đây' }}
+              </span>
+              <span class="text-[10px] text-slate-400 font-medium mt-0.5">Hỗ trợ các định dạng .xlsx, .xls, .csv</span>
+              <input type="file" (change)="onFileChange($event)" accept=".xlsx, .xls, .csv" class="hidden" />
+            </label>
+            <button 
+              *ngIf="selectedImportFile" 
+              type="button" 
+              (click)="selectedImportFile = null; selectedImportFileName = ''"
+              class="px-3.5 py-3 border border-rose-200 hover:bg-rose-50 text-rose-600 rounded-xl transition font-bold"
+              title="Xóa lựa chọn"
+            >
+              Hủy tệp
+            </button>
+          </div>
+        </div>
+
+        <!-- 2. Clipboard Paste Section -->
         <div>
-          <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">NỘI DUNG DỮ LIỆU SPREADSHEET (CHÉP TỪ EXCEL/CSV VÀ DÁN DƯỚI ĐÂY):</label>
+          <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">CÁCH 2: HOẶC SAO CHÉP DỮ LIỆU RỒI DÁN VÀO ĐÂY (HÀNG KHÁC NHAU, PHÂN TÁCH BẰNG TAB / DẤU PHẨY):</label>
           <textarea 
             [(ngModel)]="bulkCsvText"
-            rows="8" 
-            placeholder="Dán mã mẫu của bạn tại đây..."
-            class="w-full px-4 py-3 border border-slate-200 rounded-xl font-mono text-[10px] bg-slate-50 text-slate-800 outline-none focus:bg-white font-semibold"
+            rows="5" 
+            [disabled]="!!selectedImportFile"
+            placeholder="Mẹo: Bạn có thể quyét khối bảng tính trong Excel, copy (Ctrl+C) rồi paste (Ctrl+V) thẳng vào khung này..."
+            class="w-full px-4 py-3 border border-slate-200 rounded-xl font-mono text-[10px] bg-slate-50 text-slate-800 outline-none focus:bg-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
           ></textarea>
         </div>
 
@@ -321,7 +357,7 @@
           </button>
           <button 
             type="button" 
-            (click)="submitCsvImport()"
+            (click)="submitImport()"
             class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-750 text-white rounded-xl transition cursor-pointer font-bold"
           >
             NẠP HỒ SƠ VÕ ĐƯỜNG

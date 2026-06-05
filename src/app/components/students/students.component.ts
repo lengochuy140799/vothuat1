@@ -132,8 +132,26 @@ export class StudentsComponent {
     }
   }
 
+  selectedImportFile: File | null = null;
+  selectedImportFileName: string = '';
+
+  onFileChange(event: any) {
+    const target = event.target as HTMLInputElement;
+    if (target.files && target.files.length > 0) {
+      this.selectedImportFile = target.files[0];
+      this.selectedImportFileName = this.selectedImportFile.name;
+    }
+  }
+
+  downloadExcelTemplate() {
+    ExcelExporter.downloadSampleExcel();
+    this.notify.emit('Đã tải mẫu nhập hồ sơ võ sinh Excel (.xlsx) thành công!');
+  }
+
   openImportModal() {
     this.bulkCsvText = '';
+    this.selectedImportFile = null;
+    this.selectedImportFileName = '';
     this.isImportModalOpen = true;
   }
 
@@ -141,14 +159,27 @@ export class StudentsComponent {
     this.isImportModalOpen = false;
   }
 
-  submitCsvImport() {
-    if (!this.bulkCsvText.trim()) {
-      alert('Vui lòng dán dữ liệu CSV theo mẫu trước.');
-      return;
+  submitImport() {
+    if (this.selectedImportFile) {
+      ExcelExporter.parseStudentsExcelFile(this.selectedImportFile).then(parsed => {
+        this.processParsedStudents(parsed);
+      }).catch(err => {
+        alert('Có lỗi xảy ra khi đọc file Excel. Vui lòng kiểm tra lại cấu trúc file mẫu!');
+        console.error(err);
+      });
+    } else {
+      if (!this.bulkCsvText.trim()) {
+        alert('Vui lòng tải file Excel lên hoặc dán dữ liệu bảng tính theo mẫu trước.');
+        return;
+      }
+      const parsed = ExcelExporter.parseStudentsClipboardText(this.bulkCsvText);
+      this.processParsedStudents(parsed);
     }
-    const parsed = ExcelExporter.parseStudentsCsv(this.bulkCsvText);
+  }
+
+  private processParsedStudents(parsed: Partial<Student>[]) {
     if (parsed.length === 0) {
-      alert('Không nhận diện được dòng dữ liệu. Vui lòng kiểm tra tiêu đề.');
+      alert('Không nhận diện được dòng dữ liệu võ sinh nào. Vui lòng kiểm tra lại cấu trúc hàng cột.');
       return;
     }
 
@@ -170,7 +201,7 @@ export class StudentsComponent {
     });
 
     this.bulkImport.emit(newStudents);
-    this.notify.emit(`Nạp dữ liệu thành công! Đã thêm ${newStudents.length} võ sinh mẫu.`);
+    this.notify.emit(`Nạp hồ sơ thành công! Đã thêm ${newStudents.length} võ sinh mới.`);
     this.closeImportModal();
   }
 
@@ -179,8 +210,8 @@ export class StudentsComponent {
       this.notify.emit('Không có dữ liệu võ sinh để xuất!');
       return;
     }
-    ExcelExporter.exportStudentsToCsv(this.students);
-    this.notify.emit('Đã xuất danh sách võ sinh CSV thành công!');
+    ExcelExporter.exportStudentsToExcel(this.students);
+    this.notify.emit('Đã xuất danh sách võ sinh Excel (.xlsx) thành công!');
   }
 
   formatDate(dateStr: string): string {

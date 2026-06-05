@@ -168,8 +168,8 @@ export class RegistrationsComponent implements OnChanges {
       return;
     }
     const sessionName = this.activeSession ? this.activeSession.name : this.activeSessionId;
-    ExcelExporter.exportExamRegistrationsToCsv(this.activeSessionRegs, this.students, sessionName);
-    this.notify.emit(`Đã xuất bảng đăng ký dự thi ${this.activeSessionId} thành công!`);
+    ExcelExporter.exportExamRegistrationsToExcel(this.activeSessionRegs, this.students, sessionName);
+    this.notify.emit(`Đã xuất bảng đăng ký dự thi ${this.activeSessionId} định dạng Excel (.xlsx) thành công!`);
   }
 
   formatCurrency(value: number): string {
