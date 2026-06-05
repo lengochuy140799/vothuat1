@@ -1,23 +1,117 @@
-<div class="space-y-6 animate-fadeIn font-sans">
-  <!-- Header section with add button and exports -->
+<div class="space-y-6 animate-fadeIn font-sans pb-10">
+  
+  <!-- Horizontal Month Tabs Bar -->
+  <div class="bg-white p-3 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <!-- Month Tabs selection -->
+    <div class="flex flex-wrap items-center gap-1.5 overflow-x-auto">
+      <button 
+        *ngFor="let month of getMonths()"
+        (click)="selectMonth(month)"
+        id="month-tab-{{ month.replace('/', '_') }}"
+        [class]="month === activeMonth ? 'bg-indigo-600 text-white font-extrabold shadow-md shadow-indigo-650/15' : 'bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold border border-slate-200'"
+        class="px-4 py-2 rounded-xl text-xs transition cursor-pointer flex items-center gap-1.5"
+      >
+        <app-icon name="calendar" class="w-3.5 h-3.5"></app-icon>
+        <span>Tháng {{ month }}</span>
+      </button>
+      
+      <button 
+        (click)="openAddMonthModal()"
+        id="add-month-btn"
+        class="bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 text-emerald-700 font-extrabold px-3.5 py-2 rounded-xl text-xs transition flex items-center gap-1.5 cursor-pointer"
+      >
+        <app-icon name="user-plus" class="w-3.5 h-3.5"></app-icon>
+        <span>KHỞI TẠO THÁNG MỚI</span>
+      </button>
+    </div>
+
+    <!-- Export Complete Tuition Ledger Ledger -->
+    <div class="flex flex-wrap items-center gap-2">
+      <button 
+        (click)="exportAllMonths()"
+        id="export-all-ledgers-btn"
+        class="bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 text-indigo-700 font-bold px-3.5 py-2 rounded-xl text-xs transition flex items-center gap-2 cursor-pointer shadow-sm"
+      >
+        <app-icon name="download" class="w-3.5 h-3.5"></app-icon>
+        <span>XUẤT SỔ LỚP TRỌN ĐỜI</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Statistics Dashboard KPI Cards -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <!-- Active Month Total Students -->
+    <div id="kpi-total" class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center gap-4 hover:shadow-md transition duration-200">
+      <div class="p-3.5 rounded-xl bg-indigo-50 text-indigo-650">
+        <app-icon name="users" class="w-6 h-6"></app-icon>
+      </div>
+      <div>
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tổng Số Võ Sinh</p>
+        <p class="text-2xl font-black text-slate-800 tracking-tight mt-0.5">{{ kpiTotalStudents }}</p>
+        <p class="text-[10px] text-slate-500 font-semibold mt-1">Học viên trong tháng {{ activeMonth }}</p>
+      </div>
+    </div>
+
+    <!-- Active Month Paid Tuition -->
+    <div id="kpi-paid" class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center gap-4 hover:shadow-md transition duration-200">
+      <div class="p-3.5 rounded-xl bg-emerald-50 text-emerald-650">
+        <app-icon name="check" class="w-6 h-6"></app-icon>
+      </div>
+      <div>
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Đã Đóng Học Phí</p>
+        <p class="text-2xl font-black text-emerald-600 tracking-tight mt-0.5">{{ kpiPaidCount }}</p>
+        <p class="text-[10px] text-slate-500 font-semibold mt-1">Đã hoàn thành nghĩa vụ</p>
+      </div>
+    </div>
+
+    <!-- Active Month Unpaid Tuition -->
+    <div id="kpi-unpaid" class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center gap-4 hover:shadow-md transition duration-200">
+      <div class="p-3.5 rounded-xl bg-rose-50 text-rose-650">
+        <app-icon name="alert" class="w-6 h-6"></app-icon>
+      </div>
+      <div>
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Chưa Đóng Học Phí</p>
+        <p class="text-2xl font-black text-rose-600 tracking-tight mt-0.5">{{ kpiUnpaidCount }}</p>
+        <p class="text-[10px] text-slate-500 font-semibold mt-1">Còn nợ tháng {{ activeMonth }}</p>
+      </div>
+    </div>
+
+    <!-- Expected monthly revenue -->
+    <div id="kpi-revenue" class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center gap-4 hover:shadow-md transition duration-200">
+      <div class="p-3.5 rounded-xl bg-amber-50 text-amber-650">
+        <app-icon name="receipt" class="w-6 h-6"></app-icon>
+      </div>
+      <div>
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Doanh Thu Dự Thu</p>
+        <p class="text-xl font-black text-slate-800 tracking-tight mt-1">{{ formatCurrency(kpiTotalRevenue) }} VNĐ</p>
+        <p class="text-[10px] text-slate-550 font-bold mt-1">Dự thu trong tháng {{ activeMonth }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Header Action Row matching original designs -->
   <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
     <div>
-      <h2 class="text-2xl font-bold text-slate-800 tracking-tight font-sans">Hồ Sơ Võ Sinh</h2>
-      <p class="text-slate-505 text-sm mt-0.5 font-medium">Quản lý bách khoa võ sinh, cập nhật cấp đai hiện tại và nhập xuất dữ liệu</p>
+      <h2 class="text-xl font-bold text-slate-800 tracking-tight font-sans flex items-center gap-2">
+        <span>Sổ Danh Sách Võ Sinh - Tháng {{ activeMonth }}</span>
+      </h2>
+      <p class="text-slate-500 text-xs mt-0.5 font-medium">Chọn tháng phía trên để tra cứu lịch sử và học phí tương ứng</p>
     </div>
     
-    <div class="flex items-center gap-2.5">
+    <div class="flex items-center gap-2 flex-wrap">
       <button 
         (click)="exportStudents()"
-        class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-extrabold px-4 py-2.5 rounded-xl text-xs transition flex items-center gap-2 cursor-pointer shadow-sm"
+        id="export-active-excel-btn"
+        class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-extrabold px-3.5 py-2.5 rounded-xl text-xs transition flex items-center gap-2 cursor-pointer shadow-sm"
       >
         <app-icon name="download" class="w-4 h-4"></app-icon>
-        <span>XUẤT DANH SÁCH EXCEL</span>
+        <span>XUẤT EXCEL THÁNG</span>
       </button>
 
       <button 
         (click)="openImportModal()"
-        class="bg-indigo-50 border border-indigo-150 hover:bg-indigo-100 text-indigo-700 font-extrabold px-4 py-2.5 rounded-xl text-xs transition flex items-center gap-2 cursor-pointer shadow-sm"
+        id="import-excel-btn"
+        class="bg-indigo-50 border border-indigo-150 hover:bg-indigo-100 text-indigo-700 font-extrabold px-3.5 py-2.5 rounded-xl text-xs transition flex items-center gap-2 cursor-pointer shadow-sm"
       >
         <app-icon name="upload" class="w-4 h-4"></app-icon>
         <span>NHẬP DANH SÁCH EXCEL</span>
@@ -25,7 +119,8 @@
 
       <button 
         (click)="openAddForm()"
-        class="bg-indigo-600 hover:bg-indigo-750 text-white font-extrabold px-4 py-2.5 rounded-xl text-xs transition flex items-center gap-2 cursor-pointer shadow-md shadow-indigo-600/10"
+        id="add-new-student-btn"
+        class="bg-indigo-650 hover:bg-indigo-750 text-white font-extrabold px-3.5 py-2.5 rounded-xl text-xs transition flex items-center gap-2 cursor-pointer shadow-md shadow-indigo-600/10"
       >
         <app-icon name="user-plus" class="w-4 h-4"></app-icon>
         <span>THÊM VÕ SINH MỚI</span>
@@ -33,26 +128,30 @@
     </div>
   </div>
 
-  <!-- Search & Filters Container -->
-  <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-    <!-- Search query -->
+  <!-- Elaborated Advanced Filter Panel with Reset capability -->
+  <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+    <!-- Text Search input -->
     <div class="relative lg:col-span-2">
       <app-icon name="search" class="absolute left-3.5 top-3 w-4 h-4 text-slate-400"></app-icon>
       <input 
         type="text"
         [(ngModel)]="searchTerm"
-        placeholder="Tìm theo tên học viên, mã số hoặc số điện thoại..."
+        (ngModelChange)="studentCurrentPage = 1"
+        placeholder="Tìm kiếm theo mã võ sinh, tên học viên, SĐT..."
+        id="search-term-input"
         class="w-full pl-9.5 pr-4 py-2.5 border border-slate-200 rounded-xl text-xs bg-slate-50/50 hover:bg-white focus:bg-white transition outline-none font-semibold text-slate-800"
       />
     </div>
 
-    <!-- Belt filter -->
+    <!-- Color belt filter -->
     <div>
       <select 
         [(ngModel)]="beltFilter"
-        class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs font-bold text-slate-755 bg-slate-50/55 hover:bg-white cursor-pointer transition outline-none"
+        (ngModelChange)="studentCurrentPage = 1"
+        id="belt-filter-select"
+        class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 bg-slate-50/50 hover:bg-white cursor-pointer transition outline-none"
       >
-        <option value="">-- Mọi Cấp Đai --</option>
+        <option value="">🎯 -- Mọi Màu Đai --</option>
         <option value="Trắng">🥋 Đai Trắng</option>
         <option value="Vàng">🥋 Đai Vàng</option>
         <option value="Xanh">🥋 Đai Xanh</option>
@@ -61,75 +160,131 @@
       </select>
     </div>
 
-    <!-- Gender filter -->
+    <!-- Tuition state filter -->
     <div>
       <select 
-        [(ngModel)]="genderFilter"
-        class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs font-bold text-slate-755 bg-slate-50/55 hover:bg-white cursor-pointer transition outline-none"
+        [(ngModel)]="tuitionStatusFilter"
+        (ngModelChange)="studentCurrentPage = 1"
+        id="tuition-filter-select"
+        class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 bg-slate-50/50 hover:bg-white cursor-pointer transition outline-none"
       >
-        <option value="">-- Mọi Giới Tính --</option>
+        <option value="">💳 -- Mọi Học Phí --</option>
+        <option value="Đã đóng">✅ Đã Đóng Học Phí</option>
+        <option value="Chưa đóng">❌ Chưa Đóng Học Phí</option>
+      </select>
+    </div>
+
+    <!-- Gender filter and Reset Actions block combined -->
+    <div class="flex gap-2">
+      <select 
+        [(ngModel)]="genderFilter"
+        (ngModelChange)="studentCurrentPage = 1"
+        id="gender-filter-select"
+        class="flex-1 px-3 py-2.5 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 bg-slate-50/50 hover:bg-white cursor-pointer transition outline-none"
+      >
+        <option value="">👫 -- Giới Tính --</option>
         <option value="Nam">Nam</option>
         <option value="Nữ">Nữ</option>
       </select>
+
+      <button 
+        (click)="resetFilters()"
+        id="reset-filters-btn"
+        class="bg-slate-100 hover:bg-slate-200 text-slate-600 font-extrabold px-3 py-2 rounded-xl text-[11px] transition flex items-center justify-center cursor-pointer shadow-sm"
+        title="Đặt lại bộ lọc"
+      >
+        <app-icon name="refresh" class="w-4 h-4"></app-icon>
+      </button>
     </div>
   </div>
 
-  <!-- Students Table list -->
+  <!-- Main Active Month Students Table Grid List -->
   <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden animate-fadeIn">
     <div class="overflow-x-auto font-sans">
       <table class="w-full text-left border-collapse table-auto align-middle">
         <thead>
-          <tr class="bg-slate-50/75 border-b border-slate-200 text-slate-500 text-[11px] font-bold uppercase tracking-wider">
-            <th class="py-3.5 px-4 text-center w-16">STT</th>
-            <th class="py-3.5 px-4 w-32">MÃ VÕ SINH</th>
+          <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 text-[11px] font-bold uppercase tracking-wider">
+            <th class="py-3.5 px-4 text-center w-14">STT</th>
+            <th class="py-3.5 px-4 w-28">MÃ VÕ SINH</th>
             <th class="py-3.5 px-4">HỌ VÀ TÊN</th>
-            <th class="py-3.5 px-4 text-center w-28">GIỚI TÍNH</th>
-            <th class="py-3.5 px-4 text-center">NGÀY SINH</th>
-            <th class="py-3.5 px-4">ĐIỆN THOẠI LH</th>
-            <th class="py-3.5 px-4 text-center w-32">ĐAI HIỆN TẠI</th>
-            <th class="py-3.5 px-4 text-center">NGÀY GHI DANH</th>
-            <th class="py-3.5 px-4 text-center w-40">HÀNH ĐỘNG</th>
+            <th class="py-3.5 px-3 text-center w-24">GIỚI TÍNH</th>
+            <th class="py-3.5 px-4 text-center w-28">NGÀY SINH</th>
+            <th class="py-3.5 px-4 w-32">ĐIỆN THOẠI LH</th>
+            <th class="py-3.5 px-4">ĐỊA CHỈ</th>
+            <th class="py-3.5 px-4 text-center w-32">CẤP ĐAI</th>
+            <th class="py-3.5 px-4 text-center w-40">HỌC PHÍ THÁNG</th>
+            <th class="py-3.5 px-4 text-center w-28">HÀNH ĐỘNG</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-slate-100 text-slate-750 text-xs font-semibold">
-          <tr *ngIf="getFilteredStudents().length === 0">
-            <td colspan="9" class="py-12 text-center text-slate-400">
-              <app-icon name="users" class="m-auto w-8 h-8 text-slate-300"></app-icon>
-              <p class="font-semibold text-slate-500 mt-2">Không tìm thấy võ sinh phù hợp</p>
-              <p class="text-[11px] text-slate-400 mt-0.5 font-medium">Thử điều chỉnh lại điều kiện lọc hoặc thêm học viên mới</p>
+        <tbody class="divide-y divide-slate-100 text-slate-700 text-xs font-semibold">
+          <!-- Empty list state container -->
+          <tr *ngIf="paginatedFilteredItems.length === 0">
+            <td colspan="10" class="py-16 text-center text-slate-400">
+              <app-icon name="users" class="m-auto w-10 h-10 text-slate-300 mb-2"></app-icon>
+              <p class="font-extrabold text-slate-600 text-sm">Không tìm thấy võ sinh nào trong tháng</p>
+              <p class="text-[11px] text-slate-400 mt-0.5 font-medium">Bấm "Thêm võ sinh" hoặc sáp nhập dữ liệu từ tệp để cập nhật học viên</p>
             </td>
           </tr>
 
-          <tr *ngFor="let s of getFilteredStudents(); let idx = index" class="hover:bg-slate-50/50 transition duration-150 border-b border-slate-100">
-            <td class="py-3.5 px-4 text-center text-slate-400 font-bold bg-slate-50/30">{{ idx + 1 }}</td>
-            <td class="py-3.5 px-4 font-bold text-indigo-950 font-mono text-[11px]">{{ s.id }}</td>
-            <td class="py-3.5 px-4 font-bold text-slate-800 text-sm">{{ s.name }}</td>
-            <td class="py-3.5 px-4 text-center">
-              <span [class]="s.gender === 'Nam' ? 'bg-indigo-50 text-indigo-700' : 'bg-rose-50 text-rose-700'" class="px-2 py-0.5 rounded-full text-[10px] font-bold">
-                {{ s.gender }}
+          <!-- Data Row rendering -->
+          <tr *ngFor="let item of paginatedFilteredItems; let idx = index" class="hover:bg-slate-50/50 transition duration-150 border-b border-slate-100">
+            <td class="py-3.5 px-4 text-center text-slate-400 font-bold bg-slate-50/30">
+              {{ (studentCurrentPage - 1) * studentRowsPerPage + idx + 1 }}
+            </td>
+            <td class="py-3.5 px-4 font-bold text-indigo-950 font-mono text-[11px] tracking-wider">
+              {{ item.id }}
+            </td>
+            <td class="py-3.5 px-4 font-bold text-slate-800 text-sm">
+              {{ item.name }}
+            </td>
+            <td class="py-3.5 px-3 text-center">
+              <span [class]="item.gender === 'Nam' ? 'bg-indigo-50 text-indigo-700' : 'bg-rose-50 text-rose-700'" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold">
+                {{ item.gender }}
               </span>
             </td>
-            <td class="py-3.5 px-4 text-center font-medium">{{ formatDate(s.birth) }}</td>
-            <td class="py-3.5 px-4 font-mono text-slate-600">{{ s.phone }}</td>
-            <td class="py-3.5 px-4 text-center animate-fadeIn">
-              <span [class]="getBeltColorClass(s.currentBelt)" class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold border shadow-sm">
-                🥋 {{ s.currentBelt }}
+            <td class="py-3.5 px-2 text-center font-medium text-slate-600">
+              {{ formatDate(item.birth) }}
+            </td>
+            <td class="py-3.5 px-4 font-mono text-slate-600 font-semibold">
+              {{ item.phone }}
+            </td>
+            <td class="py-3.5 px-4 text-slate-500 font-medium truncate max-w-[140px]" [title]="item.address || 'Chưa cung cấp'">
+              {{ item.address || '-' }}
+            </td>
+            <td class="py-3.5 px-4 text-center">
+              <span [class]="getBeltColorClass(item.currentBelt)" class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold border shadow-sm">
+                🥋 {{ item.currentBelt }}
               </span>
             </td>
-            <td class="py-3.5 px-4 text-center text-slate-400 font-medium">{{ formatDate(s.registrationDate) }}</td>
             <td class="py-3.5 px-4 text-center">
-              <div class="flex items-center justify-center gap-1.5">
+              <!-- Click status to toggle rapidly -->
+              <button 
+                (click)="toggleTuitionStatus(item)"
+                id="toggle-tuition-{{ item.id }}"
+                [class]="item.tuitionStatus === 'Đã đóng' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50/80 text-rose-600 border-rose-200 font-black animate-pulse'"
+                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold border shadow-sm cursor-pointer hover:scale-105 transition active:scale-95"
+              >
+                <span class="w-1.5 h-1.5 rounded-full" [class]="item.tuitionStatus === 'Đã đóng' ? 'bg-emerald-500' : 'bg-rose-500'"></span>
+                <span>
+                  {{ item.tuitionStatus === 'Đã đóng' ? 'Đã đóng (' + formatCurrency(item.tuitionFee) + 'đ)' : 'Chưa đóng' }}
+                </span>
+              </button>
+            </td>
+            <td class="py-3.5 px-4 text-center">
+              <div class="flex items-center justify-center gap-1">
                 <button 
-                  (click)="openEditForm(s)"
-                  class="p-1.5 text-indigo-650 hover:bg-indigo-50 rounded-lg transition cursor-pointer"
-                  title="Sửa hồ sơ"
+                  (click)="openEditForm(item)"
+                  id="edit-student-{{ item.id }}"
+                  class="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg transition cursor-pointer"
+                  title="Sửa hồ sơ học viên"
                 >
                   <app-icon name="edit" class="w-4 h-4"></app-icon>
                 </button>
                 <button 
-                  (click)="deleteStudent(s)"
-                  class="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition cursor-pointer"
-                  title="Xóa hồ sơ"
+                  (click)="deleteStudent(item)"
+                  id="delete-student-{{ item.id }}"
+                  class="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg transition cursor-pointer"
+                  title="Xóa mềm học viên khỏi tháng hiện tại"
                 >
                   <app-icon name="trash" class="w-4 h-4"></app-icon>
                 </button>
@@ -139,18 +294,42 @@
         </tbody>
       </table>
     </div>
+
+    <!-- Pager Controls panel -->
+    <div class="bg-slate-50 px-6 py-3.5 border-t border-slate-150 flex items-center justify-between text-xs font-semibold text-slate-500">
+      <div>
+        Hiển thị trang <span class="text-indigo-950 font-bold">{{ studentCurrentPage }}</span> trên <span class="text-indigo-950 font-bold">{{ totalPages }}</span> (Tổng {{ getFilteredMonthItems().length }} bản ghi)
+      </div>
+      
+      <div class="flex items-center gap-1">
+        <button 
+          (click)="prevPage()"
+          [disabled]="studentCurrentPage === 1"
+          class="px-2.5 py-1 text-slate-500 hover:bg-slate-200 disabled:opacity-40 rounded-lg transition cursor-pointer disabled:cursor-not-allowed border border-slate-200 bg-white"
+        >
+          Trước
+        </button>
+        <button 
+          (click)="nextPage()"
+          [disabled]="studentCurrentPage === totalPages"
+          class="px-2.5 py-1 text-slate-500 hover:bg-slate-200 disabled:opacity-40 rounded-lg transition cursor-pointer disabled:cursor-not-allowed border border-slate-200 bg-white"
+        >
+          Sau
+        </button>
+      </div>
+    </div>
   </div>
 
-  <!-- Add/Edit Student Modal Form -->
-  <div *ngIf="isFormModalOpen" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
+  <!-- Add/Edit Student Modal Form overlay -->
+  <div *ngIf="isFormModalOpen" id="form-modal-container" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
     <div class="bg-white rounded-2xl shadow-xl max-w-lg w-full overflow-hidden border border-slate-100 animate-slideUp">
       <!-- Modal Header -->
       <div class="bg-slate-900 text-white px-6 py-4 flex items-center justify-between">
         <h3 class="font-bold text-base flex items-center gap-2">
           <app-icon name="user-plus" class="w-5 h-5 text-indigo-400"></app-icon>
-          <span>{{ selectedStudent ? 'Sửa Thông Tin Võ Sinh' : 'Thêm Võ Sinh Mới' }}</span>
+          <span id="modal-student-title">{{ selectedStudent ? 'Sửa Hồ Sơ Võ Sinh - ' + selectedStudent.id : 'Ghi Danh Võ Sinh Mới' }}</span>
         </h3>
-        <button (click)="closeFormModal()" class="text-slate-400 hover:text-white transition cursor-pointer">
+        <button (click)="closeFormModal()" id="close-modal-x" class="text-slate-400 hover:text-white transition cursor-pointer">
           <app-icon name="x" class="w-5 h-5"></app-icon>
         </button>
       </div>
@@ -166,6 +345,7 @@
               [(ngModel)]="formId" 
               name="formId"
               [disabled]="!!selectedStudent" 
+              id="modal-student-code"
               placeholder="Ví dụ: VS-2026-011"
               class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs bg-slate-50 disabled:bg-slate-100 disabled:text-slate-400 uppercase tracking-widest font-mono font-bold"
             />
@@ -177,7 +357,8 @@
             <select 
               [(ngModel)]="formBelt" 
               name="formBelt"
-              class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-850 cursor-pointer font-bold"
+              id="modal-student-belt"
+              class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-800 cursor-pointer font-bold"
             >
               <option value="Trắng">Trắng</option>
               <option value="Vàng">Vàng</option>
@@ -195,6 +376,7 @@
             type="text" 
             [(ngModel)]="formName" 
             name="formName"
+            id="modal-student-name"
             placeholder="Nhập họ tên đầy đủ, ví dụ: Nguyễn Quốc Cường"
             class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs bg-slate-50 text-slate-800 focus:bg-white outline-none font-bold"
             required
@@ -205,7 +387,7 @@
           <!-- Gender -->
           <div>
             <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">GIỚI TÍNH:</label>
-            <div class="flex items-center gap-4 py-2">
+            <div id="modal-student-gender" class="flex items-center gap-4 py-2">
               <label class="flex items-center gap-2 cursor-pointer font-bold">
                 <input type="radio" [(ngModel)]="formGender" name="formGender" value="Nam" class="w-4 h-4 text-indigo-600 cursor-pointer" />
                 <span>Nam</span>
@@ -217,14 +399,16 @@
             </div>
           </div>
 
-          <!-- Reg date -->
+          <!-- Phone Number -->
           <div>
-            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">NGÀY GHI DANH:</label>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">ĐIỆN THOẠI PHỤ HUYNH:</label>
             <input 
-              type="date" 
-              [(ngModel)]="formRegDate" 
-              name="formRegDate"
-              class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs bg-slate-50 text-slate-850 font-bold"
+              type="text" 
+              [(ngModel)]="formPhone" 
+              name="formPhone"
+              id="modal-student-phone"
+              placeholder="Ví dụ: 0912..."
+              class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs bg-slate-50 text-slate-800 outline-none font-bold"
               required
             />
           </div>
@@ -238,22 +422,65 @@
               type="date" 
               [(ngModel)]="formBirth" 
               name="formBirth"
-              class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs bg-slate-50 text-slate-850 font-bold"
+              id="modal-student-dob"
+              class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs bg-slate-50 text-slate-800 font-bold"
               required
             />
           </div>
 
-          <!-- Phone -->
+          <!-- Registration date -->
           <div>
-            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">ĐIỆN THOẠI LIÊN HỆ:</label>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">NGÀY GHI DANH:</label>
             <input 
-              type="text" 
-              [(ngModel)]="formPhone" 
-              name="formPhone"
-              placeholder="Ví dụ: 0912..."
-              class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs bg-slate-50 text-slate-800 outline-none font-bold"
+              type="date" 
+              [(ngModel)]="formRegDate" 
+              name="formRegDate"
+              class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs bg-slate-50 text-slate-800 font-bold"
               required
             />
+          </div>
+        </div>
+
+        <!-- Address field -->
+        <div>
+          <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">ĐỊA CHỈ THƯỜNG TRÚ:</label>
+          <input 
+            type="text" 
+            [(ngModel)]="formAddress" 
+            name="formAddress"
+            id="modal-student-address"
+            placeholder="Số nhà, ngõ ngách, tên đường phường xã..."
+            class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs bg-slate-50 text-slate-800 focus:bg-white outline-none font-bold"
+          />
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 border-t border-slate-100 pt-4">
+          <!-- Tuition Fee -->
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">HỌC PHÍ THÁNG (VNĐ):</label>
+            <input 
+              type="number" 
+              [(ngModel)]="formFee" 
+              name="formFee"
+              id="modal-student-fee"
+              min="0"
+              step="10000"
+              class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs bg-slate-50 text-slate-800 font-bold outline-none"
+              required
+            />
+          </div>
+
+          <!-- Tuition Status selection -->
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">TRẠNG THÁI HỌC PHÍ:</label>
+            <select 
+              [(ngModel)]="formTuitionStatus" 
+              name="formTuitionStatus"
+              class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-800 cursor-pointer font-bold"
+            >
+              <option value="Chưa đóng">Chưa đóng</option>
+              <option value="Đã đóng">Đã đóng</option>
+            </select>
           </div>
         </div>
 
@@ -262,7 +489,7 @@
           <button 
             type="button" 
             (click)="closeFormModal()"
-            class="px-4.5 py-2.5 bg-slate-101 hover:bg-slate-200 text-slate-650 rounded-xl transition cursor-pointer font-bold"
+            class="px-4.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl transition cursor-pointer font-bold"
           >
             Hủy Bỏ
           </button>
@@ -271,15 +498,15 @@
             class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition cursor-pointer font-bold flex items-center gap-2"
           >
             <app-icon name="check" class="w-4 h-4"></app-icon>
-            <span>{{ selectedStudent ? 'Lưu Cập Nhật' : 'Tạo Hồ Sơ Mới' }}</span>
+            <span>{{ selectedStudent ? 'Lưu Hồ Sơ' : 'Ghi Danh Mới' }}</span>
           </button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Bulk Excel Import Modal -->
-  <div *ngIf="isImportModalOpen" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
+  <!-- Bulk Excel Import Modal Overlay -->
+  <div *ngIf="isImportModalOpen" id="import-modal-overlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
     <div class="bg-white rounded-2xl shadow-xl max-w-2xl w-full overflow-hidden border border-slate-100 animate-slideUp">
       <div class="bg-slate-900 text-white px-6 py-4 flex items-center justify-between">
         <h3 class="font-bold text-base flex items-center gap-2">
@@ -292,7 +519,7 @@
       </div>
 
       <div class="p-6 space-y-4 text-xs font-semibold font-sans">
-        <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl text-slate-650 font-medium">
+        <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl text-slate-600 font-medium">
           <p class="font-bold text-slate-800 text-xs mb-1.5 flex items-center gap-1.5">
             <app-icon name="info" class="w-4 h-4 text-indigo-600"></app-icon>
             HƯỚNG DẪN HOẶC TẢI EXCEL MẪU:
@@ -304,14 +531,14 @@
           <button 
             type="button"
             (click)="downloadExcelTemplate()"
-            class="mt-2.5 bg-indigo-600 hover:bg-indigo-750 text-white font-bold px-3 py-1.5 rounded-lg text-[10px] transition flex items-center gap-1.5 cursor-pointer shadow-sm"
+            class="mt-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3 py-1.5 rounded-lg text-[10px] transition flex items-center gap-1.5 cursor-pointer shadow-sm"
           >
             <app-icon name="download" class="w-3.5 h-3.5"></app-icon>
             TẢI FILE EXCEL MẪU (.XLSX)
           </button>
         </div>
 
-        <!-- 1. File Upload Section -->
+        <!-- File upload box -->
         <div class="border-b border-slate-100 pb-4">
           <label class="block text-[10px] font-bold text-indigo-950 uppercase tracking-widest mb-1.5">CÁCH 1: CHỌN / THẢ FILE EXCEL TRỰC TIẾP:</label>
           <div class="flex items-center gap-3">
@@ -335,15 +562,15 @@
           </div>
         </div>
 
-        <!-- 2. Clipboard Paste Section -->
+        <!-- Clipboard and manual paste box -->
         <div>
-          <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">CÁCH 2: HOẶC SAO CHÉP DỮ LIỆU RỒI DÁN VÀO ĐÂY (HÀNG KHÁC NHAU, PHÂN TÁCH BẰNG TAB / DẤU PHẨY):</label>
+          <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">CÁCH 2: DÁN DỮ LIỆU TỪ CLIPBOARD (BẢNG SAO CHÉP TỪ EXCEL):</label>
           <textarea 
             [(ngModel)]="bulkCsvText"
             rows="5" 
             [disabled]="!!selectedImportFile"
-            placeholder="Mẹo: Bạn có thể quyét khối bảng tính trong Excel, copy (Ctrl+C) rồi paste (Ctrl+V) thẳng vào khung này..."
-            class="w-full px-4 py-3 border border-slate-200 rounded-xl font-mono text-[10px] bg-slate-50 text-slate-800 outline-none focus:bg-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+            placeholder="Thực hiện quét khối bảng trong Excel, nhấn Ctrl+C sau đó Ctrl+V trực tiếp vào đây..."
+            class="w-full px-4 py-3 border border-slate-200 rounded-xl font-mono text-[10px] bg-slate-50 text-slate-800 outline-none focus:bg-white font-semibold disabled:opacity-50"
           ></textarea>
         </div>
 
@@ -351,19 +578,84 @@
           <button 
             type="button" 
             (click)="closeImportModal()"
-            class="px-4.5 py-2.5 bg-slate-101 hover:bg-slate-200 text-slate-650 rounded-xl transition cursor-pointer"
+            class="px-4.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-650 rounded-xl transition cursor-pointer"
           >
-            Hủy bỏ
+            Hủy Bỏ
           </button>
           <button 
             type="button" 
             (click)="submitImport()"
-            class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-750 text-white rounded-xl transition cursor-pointer font-bold"
+            class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition cursor-pointer font-bold"
           >
-            NẠP HỒ SƠ VÕ ĐƯỜNG
+            SÁP NHẬP HỒ SƠ
           </button>
         </div>
       </div>
     </div>
   </div>
+
+  <!-- Add New Month Configuration dialog modal -->
+  <div *ngIf="isAddMonthModalOpen" id="add-month-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
+    <div class="bg-white rounded-2xl shadow-xl max-w-md w-full overflow-hidden border border-slate-100 animate-slideUp">
+      <!-- Modal Header -->
+      <div class="bg-slate-900 text-white px-6 py-4 flex items-center justify-between">
+        <h3 class="font-bold text-base flex items-center gap-2">
+          <app-icon name="calendar" class="w-5 h-5 text-emerald-400"></app-icon>
+          <span>Khởi Tạo Sổ Thu Phí Mới</span>
+        </h3>
+        <button (click)="closeAddMonthModal()" class="text-slate-400 hover:text-white transition cursor-pointer">
+          <app-icon name="x" class="w-5 h-5"></app-icon>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <form (submit)="submitAddMonth($event)" class="p-6 space-y-4 text-xs font-semibold text-slate-600 font-sans">
+        <div>
+          <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">CHỌN THÁNG & NĂM CẦN KHỞI TẠO:</label>
+          <input 
+            type="month" 
+            [(ngModel)]="formNewMonthValue" 
+            name="formNewMonthValue"
+            class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs bg-slate-50 text-slate-800 outline-none font-bold"
+            required
+          />
+          <p class="text-[10px] text-slate-400 mt-1 font-semibold">Hệ thống sẽ tổng hợp danh sách phục vụ cho việc quản lý học phí tháng được chọn.</p>
+        </div>
+
+        <div class="bg-indigo-50/50 p-3.5 rounded-xl border border-indigo-100 space-y-2 mt-2">
+          <label class="flex items-start gap-2.5 cursor-pointer text-slate-700">
+            <input 
+              type="checkbox" 
+              [(ngModel)]="copyFromPreviousMonth" 
+              name="copyFromPreviousMonth"
+              class="w-4.5 h-4.5 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer mt-0.5"
+            />
+            <div class="text-xs font-semibold">
+              <p class="font-extrabold text-indigo-950">Sao chép danh sách từ tháng trước</p>
+              <p class="text-[10px] text-slate-500 font-medium">Tự động kết chuyển toàn bộ võ sinh đang học từ tháng gần nhất, đặt mức thu phí và đưa trạng thái về "Chưa đóng" để bắt đầu kỳ thu mới.</p>
+            </div>
+          </label>
+        </div>
+
+        <!-- Footer Buttons -->
+        <div class="pt-4 border-t border-slate-100 flex items-center justify-end gap-2 text-xs">
+          <button 
+            type="button" 
+            (click)="closeAddMonthModal()"
+            class="px-4.5 py-2.5 bg-slate-100 hover:bg-slate-200 rounded-xl transition cursor-pointer"
+          >
+            Hủy Bỏ
+          </button>
+          <button 
+            type="submit"
+            class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl transition cursor-pointer font-bold flex items-center gap-1.5"
+          >
+            <app-icon name="check" class="w-4 h-4"></app-icon>
+            <span>Ký Sổ Khởi Tạo</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
 </div>

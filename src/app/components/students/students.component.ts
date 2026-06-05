@@ -1,9 +1,31 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Student } from '../../../types';
 import { IconComponent } from '../icon/icon.component';
 import { ExcelExporter } from '../../utils/excel-helper';
+import * as XLSX from 'xlsx';
+
+export interface MonthlyBilling {
+  studentId: string;
+  status: 'Đã đóng' | 'Chưa đóng';
+  fee: number;
+  isDeleted?: boolean;
+}
+
+export interface MonthlyBillingItem {
+  id: string;
+  name: string;
+  gender: 'Nam' | 'Nữ';
+  birth: string;
+  phone: string;
+  currentBelt: 'Trắng' | 'Vàng' | 'Xanh' | 'Đỏ' | 'Đen';
+  registrationDate: string;
+  tuitionFee: number;
+  tuitionStatus: 'Đã đóng' | 'Chưa đóng';
+  address?: string;
+  monthRecordIdx: number;
+}
 
 @Component({
   selector: 'app-students',
@@ -12,7 +34,7 @@ import { ExcelExporter } from '../../utils/excel-helper';
   templateUrl: './students.component.html',
   styleUrls: ['./students.component.css']
 })
-export class StudentsComponent {
+export class StudentsComponent implements OnInit {
   @Input() students: Student[] = [];
   
   @Output() addStudent = new EventEmitter<Student>();
@@ -21,12 +43,16 @@ export class StudentsComponent {
   @Output() bulkImport = new EventEmitter<Student[]>();
   @Output() notify = new EventEmitter<string>();
 
+  // Filter and input bounds
   searchTerm: string = '';
   beltFilter: string = '';
+  tuitionStatusFilter: string = '';
   genderFilter: string = '';
 
   isFormModalOpen: boolean = false;
   isImportModalOpen: boolean = false;
+  isAddMonthModalOpen: boolean = false;
+  
   selectedStudent: Student | null = null;
   bulkCsvText: string = '';
 
@@ -36,19 +62,282 @@ export class StudentsComponent {
   formGender: 'Nam' | 'Nữ' = 'Nam';
   formBirth: string = '';
   formPhone: string = '';
+  formAddress: string = '';
   formBelt: 'Trắng' | 'Vàng' | 'Xanh' | 'Đỏ' | 'Đen' = 'Trắng';
   formRegDate: string = '';
+  formFee: number = 400000;
+  formTuitionStatus: 'Đã đóng' | 'Chưa đóng' = 'Chưa đóng';
 
-  getFilteredStudents(): Student[] {
-    return this.students.filter(student => {
-      const matchesSearch = 
-        student.name.toLowerCase().includes(this.searchTerm.toLowerCase()) || 
-        student.id.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        student.phone.toLowerCase().includes(this.searchTerm.toLowerCase());
-      const matchesBelt = this.beltFilter === '' || student.currentBelt === this.beltFilter;
-      const matchesGender = this.genderFilter === '' || student.gender === this.genderFilter;
-      return matchesSearch && matchesBelt && matchesGender;
+  // Month-by-month database
+  activeMonth: string = '06/2026';
+  tuitionDb: { [key: string]: MonthlyBilling[] } = {};
+
+  // Pagination bounds
+  studentCurrentPage: number = 1;
+  studentRowsPerPage: number = 8;
+
+  // Month input binding
+  formNewMonthValue: string = '';
+  copyFromPreviousMonth: boolean = true;
+
+  ngOnInit() {
+    this.initializeMonthlyData();
+  }
+
+  initializeMonthlyData() {
+    const stored = localStorage.getItem('mabu_tuition_db_v2');
+    if (stored) {
+      try {
+        this.tuitionDb = JSON.parse(stored);
+      } catch (e) {
+        this.loadDefaultTuitionDb();
+      }
+    } else {
+      this.loadDefaultTuitionDb();
+    }
+
+    // fallback activeMonth if list is empty
+    const months = this.getMonths();
+    if (months.length > 0 && !months.includes(this.activeMonth)) {
+      this.activeMonth = months[months.length - 1];
+    }
+  }
+
+  loadDefaultTuitionDb() {
+    this.tuitionDb = {
+      "04/2026": [
+        { studentId: 'VS-2026-001', status: 'Đã đóng', fee: 400000 },
+        { studentId: 'VS-2026-002', status: 'Đã đóng', fee: 400000 },
+        { studentId: 'VS-2026-003', status: 'Chưa đóng', fee: 400000 },
+        { studentId: 'VS-2026-004', status: 'Đã đóng', fee: 400000 },
+        { studentId: 'VS-2026-005', status: 'Chưa đóng', fee: 400000 }
+      ],
+      "05/2026": [
+        { studentId: 'VS-2026-001', status: 'Đã đóng', fee: 400000 },
+        { studentId: 'VS-2026-002', status: 'Đã đóng', fee: 400000 },
+        { studentId: 'VS-2026-003', status: 'Đã đóng', fee: 400000 },
+        { studentId: 'VS-2026-004', status: 'Đã đóng', fee: 400000 },
+        { studentId: 'VS-2026-005', status: 'Chưa đóng', fee: 400000 },
+        { studentId: 'VS-2026-006', status: 'Đã đóng', fee: 400000 },
+        { studentId: 'VS-2026-007', status: 'Chưa đóng', fee: 400000 }
+      ],
+      "06/2026": [
+        { studentId: 'VS-2026-001', status: 'Chưa đóng', fee: 400000 },
+        { studentId: 'VS-2026-002', status: 'Đã đóng', fee: 400000 },
+        { studentId: 'VS-2026-003', status: 'Đã đóng', fee: 400000 },
+        { studentId: 'VS-2026-004', status: 'Chưa đóng', fee: 400000 },
+        { studentId: 'VS-2026-005', status: 'Đã đóng', fee: 400000 },
+        { studentId: 'VS-2026-006', status: 'Chưa đóng', fee: 400000 },
+        { studentId: 'VS-2026-007', status: 'Đã đóng', fee: 400000 },
+        { studentId: 'VS-2026-008', status: 'Đã đóng', fee: 400000 },
+        { studentId: 'VS-2026-009', status: 'Chưa đóng', fee: 400000 },
+        { studentId: 'VS-2026-010', status: 'Đã đóng', fee: 500000 }
+      ]
+    };
+    this.saveTuitionDb();
+  }
+
+  saveTuitionDb() {
+    localStorage.setItem('mabu_tuition_db_v2', JSON.stringify(this.tuitionDb));
+  }
+
+  getMonths(): string[] {
+    return Object.keys(this.tuitionDb).sort((a, b) => {
+      const [mA, yA] = a.split('/').map(Number);
+      const [mB, yB] = b.split('/').map(Number);
+      return yA !== yB ? yA - yB : mA - mB;
     });
+  }
+
+  selectMonth(month: string) {
+    this.activeMonth = month;
+    this.studentCurrentPage = 1;
+    this.notify.emit(`Đã chuyển sang xem dữ liệu Tháng ${month}`);
+  }
+
+  openAddMonthModal() {
+    this.formNewMonthValue = '';
+    this.copyFromPreviousMonth = true;
+    this.isAddMonthModalOpen = true;
+  }
+
+  closeAddMonthModal() {
+    this.isAddMonthModalOpen = false;
+  }
+
+  submitAddMonth(e: Event) {
+    e.preventDefault();
+    if (!this.formNewMonthValue) {
+      alert('Vui lòng chọn hoặc nhập Tháng/Năm đầy đủ!');
+      return;
+    }
+
+    const [year, month] = this.formNewMonthValue.split('-'); // e.g., "2026-07"
+    const newMonthKey = `${month}/${year}`;
+
+    if (this.tuitionDb[newMonthKey]) {
+      alert(`Trang dữ liệu Tháng ${newMonthKey} đã tồn tại trong danh mục!`);
+      return;
+    }
+
+    let clonedRecords: MonthlyBilling[] = [];
+    if (this.copyFromPreviousMonth) {
+      const sortedMonths = this.getMonths();
+      if (sortedMonths.length > 0) {
+        const prevMonthKey = sortedMonths[sortedMonths.length - 1];
+        const prevRecords = this.tuitionDb[prevMonthKey] || [];
+        clonedRecords = prevRecords
+          .filter(r => !r.isDeleted)
+          .map(r => ({
+            studentId: r.studentId,
+            status: 'Chưa đóng' as const, // Reset payment state to Unpaid for new month
+            fee: r.fee
+          }));
+      }
+    }
+
+    this.tuitionDb[newMonthKey] = clonedRecords;
+    this.saveTuitionDb();
+    this.activeMonth = newMonthKey;
+    this.studentCurrentPage = 1;
+    this.isAddMonthModalOpen = false;
+    this.notify.emit(`Đã khởi tạo thành công sổ theo dõi học phí Tháng ${newMonthKey}!`);
+  }
+
+  syncMonthStudents() {
+    if (!this.tuitionDb[this.activeMonth]) {
+      this.tuitionDb[this.activeMonth] = [];
+    }
+
+    const currentRecords = this.tuitionDb[this.activeMonth];
+    const existingIds = new Set(currentRecords.map(r => r.studentId));
+
+    let modified = false;
+    this.students.forEach(s => {
+      if (!existingIds.has(s.id)) {
+        currentRecords.push({
+          studentId: s.id,
+          status: 'Chưa đóng',
+          fee: 400000
+        });
+        modified = true;
+      }
+    });
+
+    if (modified) {
+      this.saveTuitionDb();
+    }
+  }
+
+  // Active items for activeMonth
+  getActiveMonthItems(): MonthlyBillingItem[] {
+    this.syncMonthStudents();
+
+    const records = this.tuitionDb[this.activeMonth] || [];
+    const items: MonthlyBillingItem[] = [];
+
+    records.forEach((rec, idx) => {
+      if (rec.isDeleted) return; // Skip soft deletes
+
+      const student = this.students.find(s => s.id === rec.studentId);
+      if (student) {
+        items.push({
+          id: student.id,
+          name: student.name,
+          gender: student.gender,
+          birth: student.birth,
+          phone: student.phone,
+          currentBelt: student.currentBelt,
+          registrationDate: student.registrationDate,
+          address: student.address || '',
+          tuitionFee: rec.fee,
+          tuitionStatus: rec.status,
+          monthRecordIdx: idx
+        });
+      }
+    });
+
+    return items;
+  }
+
+  // Filtered lists matching requested options
+  getFilteredMonthItems(): MonthlyBillingItem[] {
+    const list = this.getActiveMonthItems();
+    const search = this.searchTerm.toLowerCase().trim();
+    const belt = this.beltFilter;
+    const tStatus = this.tuitionStatusFilter;
+    const gender = this.genderFilter;
+
+    return list.filter(item => {
+      const matchesSearch = 
+        item.name.toLowerCase().includes(search) || 
+        item.id.toLowerCase().includes(search) || 
+        item.phone.toLowerCase().includes(search);
+      const matchesBelt = belt === '' || item.currentBelt === belt;
+      const matchesTuition = tStatus === '' || item.tuitionStatus === tStatus;
+      const matchesGender = gender === '' || item.gender === gender;
+
+      return matchesSearch && matchesBelt && matchesTuition && matchesGender;
+    });
+  }
+
+  // Paginated elements
+  get paginatedFilteredItems(): MonthlyBillingItem[] {
+    const list = this.getFilteredMonthItems();
+    const startIdx = (this.studentCurrentPage - 1) * this.studentRowsPerPage;
+    return list.slice(startIdx, startIdx + this.studentRowsPerPage);
+  }
+
+  get totalPages(): number {
+    return Math.ceil(this.getFilteredMonthItems().length / this.studentRowsPerPage) || 1;
+  }
+
+  prevPage() {
+    if (this.studentCurrentPage > 1) {
+      this.studentCurrentPage--;
+    }
+  }
+
+  nextPage() {
+    if (this.studentCurrentPage < this.totalPages) {
+      this.studentCurrentPage++;
+    }
+  }
+
+  // KPI Calculations
+  get kpiTotalStudents(): number {
+    return this.getActiveMonthItems().length;
+  }
+
+  get kpiPaidCount(): number {
+    return this.getActiveMonthItems().filter(i => i.tuitionStatus === 'Đã đóng').length;
+  }
+
+  get kpiUnpaidCount(): number {
+    return this.getActiveMonthItems().filter(i => i.tuitionStatus === 'Chưa đóng').length;
+  }
+
+  get kpiTotalRevenue(): number {
+    return this.getActiveMonthItems().reduce((sum, item) => sum + item.tuitionFee, 0);
+  }
+
+  resetFilters() {
+    this.searchTerm = '';
+    this.beltFilter = '';
+    this.tuitionStatusFilter = '';
+    this.genderFilter = '';
+    this.studentCurrentPage = 1;
+    this.notify.emit('Đã đặt lại toàn bộ bộ lọc hoàn toàn!');
+  }
+
+  toggleTuitionStatus(item: MonthlyBillingItem) {
+    const records = this.tuitionDb[this.activeMonth] || [];
+    if (records[item.monthRecordIdx]) {
+      const current = records[item.monthRecordIdx].status;
+      records[item.monthRecordIdx].status = current === 'Đã đóng' ? 'Chưa đóng' : 'Đã đóng';
+      this.saveTuitionDb();
+      this.notify.emit(`Đã cập nhật trạng thái học phí của ${item.name}`);
+    }
   }
 
   generateNewId(): string {
@@ -71,20 +360,31 @@ export class StudentsComponent {
     this.formGender = 'Nam';
     this.formBirth = '2012-01-01';
     this.formPhone = '';
+    this.formAddress = '';
     this.formBelt = 'Trắng';
     this.formRegDate = new Date().toISOString().split('T')[0];
+    this.formFee = 400000;
+    this.formTuitionStatus = 'Chưa đóng';
     this.isFormModalOpen = true;
   }
 
-  openEditForm(student: Student) {
+  openEditForm(item: MonthlyBillingItem) {
+    const student = this.students.find(s => s.id === item.id);
+    if (!student) return;
+
     this.selectedStudent = student;
     this.formId = student.id;
     this.formName = student.name;
     this.formGender = student.gender;
     this.formBirth = student.birth;
     this.formPhone = student.phone;
+    this.formAddress = student.address || '';
     this.formBelt = student.currentBelt;
     this.formRegDate = student.registrationDate;
+    
+    this.formFee = item.tuitionFee;
+    this.formTuitionStatus = item.tuitionStatus;
+    
     this.isFormModalOpen = true;
   }
 
@@ -106,29 +406,60 @@ export class StudentsComponent {
       gender: this.formGender,
       birth: this.formBirth,
       phone: this.formPhone.trim(),
+      address: this.formAddress.trim(),
       currentBelt: this.formBelt,
       registrationDate: this.formRegDate,
       createdAt: this.selectedStudent ? this.selectedStudent.createdAt : new Date().toISOString()
     };
 
     if (this.selectedStudent) {
+      // General profile update
       this.updateStudent.emit(studentData);
+      
+      // Monthly billing fee & status update
+      const records = this.tuitionDb[this.activeMonth] || [];
+      const rec = records.find(r => r.studentId === studentData.id);
+      if (rec) {
+        rec.fee = this.formFee;
+        rec.status = this.formTuitionStatus;
+        this.saveTuitionDb();
+      }
+
       this.notify.emit(`Đã cập nhật thông tin võ sinh ${this.formName}`);
     } else {
       if (this.students.some(s => s.id === studentData.id)) {
         this.notify.emit(`Mã võ sinh ${studentData.id} đã tồn tại trong hệ thống!`);
         return;
       }
+      
+      // General profile creation
       this.addStudent.emit(studentData);
-      this.notify.emit(`Đã thêm mới võ sinh ${this.formName}`);
+      
+      // Monthly state mapping creation
+      if (!this.tuitionDb[this.activeMonth]) {
+        this.tuitionDb[this.activeMonth] = [];
+      }
+      this.tuitionDb[this.activeMonth].push({
+        studentId: studentData.id,
+        status: this.formTuitionStatus,
+        fee: this.formFee
+      });
+      this.saveTuitionDb();
+
+      this.notify.emit(`Đã ghi danh và cập nhật bách khoa học phí võ sinh ${this.formName}`);
     }
     this.closeFormModal();
   }
 
-  deleteStudent(student: Student) {
-    if (confirm(`Bạn chắc chắn muốn xóa hồ sơ ${student.name} (${student.id})? Mọi đăng ký thi đai liên quan và hóa đơn cũng sẽ bị loại bỏ.`)) {
-      this.deleteStudentId.emit(student.id);
-      this.notify.emit(`Đã xóa võ sinh ${student.name}`);
+  deleteStudent(item: MonthlyBillingItem) {
+    if (confirm(`Bạn chắc chắn muốn xóa mềm võ sinh ${item.name} (${item.id}) khỏi Tháng ${this.activeMonth}? Lịch sử đóng phí các tháng khác và hồ sơ gốc vẫn được giữ lại đầy đủ.`)) {
+      const records = this.tuitionDb[this.activeMonth] || [];
+      if (records[item.monthRecordIdx]) {
+        records[item.monthRecordIdx].isDeleted = true;
+        this.saveTuitionDb();
+        this.notify.emit(`Đã xóa mềm võ sinh ${item.name} khỏi Tháng ${this.activeMonth}`);
+        this.studentCurrentPage = 1;
+      }
     }
   }
 
@@ -194,6 +525,7 @@ export class StudentsComponent {
         gender: item.gender || 'Nam',
         birth: item.birth || '2012-01-01',
         phone: item.phone || '0901234567',
+        address: '',
         currentBelt: item.currentBelt || 'Trắng',
         registrationDate: item.registrationDate || new Date().toISOString().split('T')[0],
         createdAt: new Date().toISOString()
@@ -202,22 +534,100 @@ export class StudentsComponent {
 
     this.bulkImport.emit(newStudents);
     this.notify.emit(`Nạp hồ sơ thành công! Đã thêm ${newStudents.length} võ sinh mới.`);
+    this.studentCurrentPage = 1;
     this.closeImportModal();
   }
 
+  // Active month single sheet export
   exportStudents() {
-    if (this.students.length === 0) {
-      this.notify.emit('Không có dữ liệu võ sinh để xuất!');
+    const list = this.getFilteredMonthItems();
+    if (list.length === 0) {
+      this.notify.emit('Không có dữ liệu trong tháng này để xuất!');
       return;
     }
-    ExcelExporter.exportStudentsToExcel(this.students);
-    this.notify.emit('Đã xuất danh sách võ sinh Excel (.xlsx) thành công!');
+    
+    const headers = ['STT', 'Mã Võ Sinh', 'Họ Và Tên', 'Giới Tính', 'Ngày Sinh', 'Số Điện Thoại', 'Địa Chỉ', 'Cấp Đai Hiện Tại', 'Mức Học Phí', 'Học Phí Tháng'];
+    const rows = list.map((item, index) => [
+      index + 1,
+      item.id,
+      item.name,
+      item.gender,
+      this.formatDate(item.birth),
+      item.phone,
+      item.address || '',
+      item.currentBelt,
+      item.tuitionFee,
+      item.tuitionStatus
+    ]);
+
+    const worksheetData = [headers, ...rows];
+    const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+    
+    const colWidths = headers.map((_, i) => ({
+      wch: Math.max(...worksheetData.map(row => row[i] ? row[i].toString().length + 3 : 10))
+    }));
+    worksheet['!cols'] = colWidths;
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, `Thu Phí Tháng ${this.activeMonth.replace('/', '-')}`);
+
+    XLSX.writeFile(workbook, `Hoc_Phi_MABU_Thang_${this.activeMonth.replace('/', '_')}.xlsx`);
+    this.notify.emit(`Đã xuất báo cáo học phí Tháng ${this.activeMonth} Excel (.xlsx) thành công!`);
+  }
+
+  // Multi-sheet complete monthly log exports
+  exportAllMonths() {
+    try {
+      const workbook = XLSX.utils.book_new();
+      const sortedMonths = this.getMonths();
+
+      sortedMonths.forEach(monthKey => {
+        // Build active list for that particular month
+        const records = this.tuitionDb[monthKey] || [];
+        const monthlyRowData = records
+          .filter(r => !r.isDeleted)
+          .map((rec, index) => {
+            const s = this.students.find(student => student.id === rec.studentId);
+            return [
+              index + 1,
+              rec.studentId,
+              s ? s.name : 'N/A',
+              s ? s.gender : 'N/A',
+              s ? this.formatDate(s.birth) : 'N/A',
+              s ? s.phone : 'N/A',
+              s ? (s.address || '') : '',
+              s ? s.currentBelt : 'N/A',
+              rec.fee,
+              rec.status
+            ];
+          });
+
+        const headers = ['STT', 'Mã Võ Sinh', 'Họ và Tên', 'Giới Tính', 'Ngày Sinh', 'Số Điện Thoại', 'Địa Chỉ', 'Cấp Đai', 'Học Phí Hàng Tháng', 'Trạng Thái'];
+        const wsData = [headers, ...monthlyRowData];
+        const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+        ws['!cols'] = headers.map((_, i) => ({ wch: 15 }));
+        XLSX.utils.book_append_sheet(workbook, ws, `Tháng ${monthKey.replace('/', '-')}`);
+      });
+
+      XLSX.writeFile(workbook, 'So_Theo_Doi_Hoc_Phi_MABU_Tron_Goi.xlsx');
+      this.notify.emit('Đã xuất sổ sách theo dõi học phí trọn gói (.XLSX) thành công!');
+    } catch (err) {
+      console.error(err);
+      this.notify.emit('Có lỗi xảy ra khi tổng hợp dữ liệu!');
+    }
   }
 
   formatDate(dateStr: string): string {
     if (!dateStr) return '';
-    const [y, m, d] = dateStr.split('-');
+    const parts = dateStr.split('-');
+    if (parts.length !== 3) return dateStr;
+    const [y, m, d] = parts;
     return `${d}/${m}/${y}`;
+  }
+
+  formatCurrency(value: number): string {
+    return new Intl.NumberFormat('vi-VN').format(value);
   }
 
   getBeltColorClass(belt: string): string {

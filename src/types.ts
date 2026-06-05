@@ -7,6 +7,7 @@ export interface Student {
   currentBelt: 'Trắng' | 'Vàng' | 'Xanh' | 'Đỏ' | 'Đen';
   registrationDate: string;
   createdAt: string;
+  address?: string;
 }
 
 export interface ExamSession {
