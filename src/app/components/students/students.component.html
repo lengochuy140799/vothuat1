@@ -1,0 +1,333 @@
+<div class="space-y-6 animate-fadeIn font-sans">
+  <!-- Header section with add button and exports -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <h2 class="text-2xl font-bold text-slate-800 tracking-tight font-sans">Hồ Sơ Võ Sinh</h2>
+      <p class="text-slate-505 text-sm mt-0.5 font-medium">Quản lý bách khoa võ sinh, cập nhật cấp đai hiện tại và nhập xuất dữ liệu</p>
+    </div>
+    
+    <div class="flex items-center gap-2.5">
+      <button 
+        (click)="exportStudents()"
+        class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-extrabold px-4 py-2.5 rounded-xl text-xs transition flex items-center gap-2 cursor-pointer shadow-sm"
+      >
+        <app-icon name="download" class="w-4 h-4"></app-icon>
+        <span>XUẤT DANH SÁCH CSV</span>
+      </button>
+
+      <button 
+        (click)="openImportModal()"
+        class="bg-indigo-50 border border-indigo-150 hover:bg-indigo-100 text-indigo-700 font-extrabold px-4 py-2.5 rounded-xl text-xs transition flex items-center gap-2 cursor-pointer shadow-sm"
+      >
+        <app-icon name="upload" class="w-4 h-4"></app-icon>
+        <span>NHẬP BULK CSV</span>
+      </button>
+
+      <button 
+        (click)="openAddForm()"
+        class="bg-indigo-600 hover:bg-indigo-750 text-white font-extrabold px-4 py-2.5 rounded-xl text-xs transition flex items-center gap-2 cursor-pointer shadow-md shadow-indigo-600/10"
+      >
+        <app-icon name="user-plus" class="w-4 h-4"></app-icon>
+        <span>THÊM VÕ SINH MỚI</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Search & Filters Container -->
+  <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <!-- Search query -->
+    <div class="relative lg:col-span-2">
+      <app-icon name="search" class="absolute left-3.5 top-3 w-4 h-4 text-slate-400"></app-icon>
+      <input 
+        type="text"
+        [(ngModel)]="searchTerm"
+        placeholder="Tìm theo tên học viên, mã số hoặc số điện thoại..."
+        class="w-full pl-9.5 pr-4 py-2.5 border border-slate-200 rounded-xl text-xs bg-slate-50/50 hover:bg-white focus:bg-white transition outline-none font-semibold text-slate-800"
+      />
+    </div>
+
+    <!-- Belt filter -->
+    <div>
+      <select 
+        [(ngModel)]="beltFilter"
+        class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs font-bold text-slate-755 bg-slate-50/55 hover:bg-white cursor-pointer transition outline-none"
+      >
+        <option value="">-- Mọi Cấp Đai --</option>
+        <option value="Trắng">🥋 Đai Trắng</option>
+        <option value="Vàng">🥋 Đai Vàng</option>
+        <option value="Xanh">🥋 Đai Xanh</option>
+        <option value="Đỏ">🥋 Đai Đỏ</option>
+        <option value="Đen">🥋 Đai Đen</option>
+      </select>
+    </div>
+
+    <!-- Gender filter -->
+    <div>
+      <select 
+        [(ngModel)]="genderFilter"
+        class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs font-bold text-slate-755 bg-slate-50/55 hover:bg-white cursor-pointer transition outline-none"
+      >
+        <option value="">-- Mọi Giới Tính --</option>
+        <option value="Nam">Nam</option>
+        <option value="Nữ">Nữ</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Students Table list -->
+  <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden animate-fadeIn">
+    <div class="overflow-x-auto font-sans">
+      <table class="w-full text-left border-collapse table-auto align-middle">
+        <thead>
+          <tr class="bg-slate-50/75 border-b border-slate-200 text-slate-500 text-[11px] font-bold uppercase tracking-wider">
+            <th class="py-3.5 px-4 text-center w-16">STT</th>
+            <th class="py-3.5 px-4 w-32">MÃ VÕ SINH</th>
+            <th class="py-3.5 px-4">HỌ VÀ TÊN</th>
+            <th class="py-3.5 px-4 text-center w-28">GIỚI TÍNH</th>
+            <th class="py-3.5 px-4 text-center">NGÀY SINH</th>
+            <th class="py-3.5 px-4">ĐIỆN THOẠI LH</th>
+            <th class="py-3.5 px-4 text-center w-32">ĐAI HIỆN TẠI</th>
+            <th class="py-3.5 px-4 text-center">NGÀY GHI DANH</th>
+            <th class="py-3.5 px-4 text-center w-40">HÀNH ĐỘNG</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 text-slate-750 text-xs font-semibold">
+          <tr *ngIf="getFilteredStudents().length === 0">
+            <td colspan="9" class="py-12 text-center text-slate-400">
+              <app-icon name="users" class="m-auto w-8 h-8 text-slate-300"></app-icon>
+              <p class="font-semibold text-slate-500 mt-2">Không tìm thấy võ sinh phù hợp</p>
+              <p class="text-[11px] text-slate-400 mt-0.5 font-medium">Thử điều chỉnh lại điều kiện lọc hoặc thêm học viên mới</p>
+            </td>
+          </tr>
+
+          <tr *ngFor="let s of getFilteredStudents(); let idx = index" class="hover:bg-slate-50/50 transition duration-150 border-b border-slate-100">
+            <td class="py-3.5 px-4 text-center text-slate-400 font-bold bg-slate-50/30">{{ idx + 1 }}</td>
+            <td class="py-3.5 px-4 font-bold text-indigo-950 font-mono text-[11px]">{{ s.id }}</td>
+            <td class="py-3.5 px-4 font-bold text-slate-800 text-sm">{{ s.name }}</td>
+            <td class="py-3.5 px-4 text-center">
+              <span [class]="s.gender === 'Nam' ? 'bg-indigo-50 text-indigo-700' : 'bg-rose-50 text-rose-700'" class="px-2 py-0.5 rounded-full text-[10px] font-bold">
+                {{ s.gender }}
+              </span>
+            </td>
+            <td class="py-3.5 px-4 text-center font-medium">{{ formatDate(s.birth) }}</td>
+            <td class="py-3.5 px-4 font-mono text-slate-600">{{ s.phone }}</td>
+            <td class="py-3.5 px-4 text-center animate-fadeIn">
+              <span [class]="getBeltColorClass(s.currentBelt)" class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold border shadow-sm">
+                🥋 {{ s.currentBelt }}
+              </span>
+            </td>
+            <td class="py-3.5 px-4 text-center text-slate-400 font-medium">{{ formatDate(s.registrationDate) }}</td>
+            <td class="py-3.5 px-4 text-center">
+              <div class="flex items-center justify-center gap-1.5">
+                <button 
+                  (click)="openEditForm(s)"
+                  class="p-1.5 text-indigo-650 hover:bg-indigo-50 rounded-lg transition cursor-pointer"
+                  title="Sửa hồ sơ"
+                >
+                  <app-icon name="edit" class="w-4 h-4"></app-icon>
+                </button>
+                <button 
+                  (click)="deleteStudent(s)"
+                  class="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition cursor-pointer"
+                  title="Xóa hồ sơ"
+                >
+                  <app-icon name="trash" class="w-4 h-4"></app-icon>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Add/Edit Student Modal Form -->
+  <div *ngIf="isFormModalOpen" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
+    <div class="bg-white rounded-2xl shadow-xl max-w-lg w-full overflow-hidden border border-slate-100 animate-slideUp">
+      <!-- Modal Header -->
+      <div class="bg-slate-900 text-white px-6 py-4 flex items-center justify-between">
+        <h3 class="font-bold text-base flex items-center gap-2">
+          <app-icon name="user-plus" class="w-5 h-5 text-indigo-400"></app-icon>
+          <span>{{ selectedStudent ? 'Sửa Thông Tin Võ Sinh' : 'Thêm Võ Sinh Mới' }}</span>
+        </h3>
+        <button (click)="closeFormModal()" class="text-slate-400 hover:text-white transition cursor-pointer">
+          <app-icon name="x" class="w-5 h-5"></app-icon>
+        </button>
+      </div>
+
+      <!-- Modal Body Form -->
+      <form (submit)="submitForm($event)" class="p-6 space-y-4 text-xs font-semibold text-slate-600 font-sans">
+        <div class="grid grid-cols-2 gap-4">
+          <!-- Student ID -->
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">MÃ SỐ VÕ SINH:</label>
+            <input 
+              type="text" 
+              [(ngModel)]="formId" 
+              name="formId"
+              [disabled]="!!selectedStudent" 
+              placeholder="Ví dụ: VS-2026-011"
+              class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs bg-slate-50 disabled:bg-slate-100 disabled:text-slate-400 uppercase tracking-widest font-mono font-bold"
+            />
+          </div>
+
+          <!-- Gym Belt Level -->
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">CẤP ĐAI:</label>
+            <select 
+              [(ngModel)]="formBelt" 
+              name="formBelt"
+              class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-850 cursor-pointer font-bold"
+            >
+              <option value="Trắng">Trắng</option>
+              <option value="Vàng">Vàng</option>
+              <option value="Xanh">Xanh</option>
+              <option value="Đỏ">Đỏ</option>
+              <option value="Đen">Đen</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Full Name -->
+        <div>
+          <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">HỌ VÀ TÊN VÕ SINH:</label>
+          <input 
+            type="text" 
+            [(ngModel)]="formName" 
+            name="formName"
+            placeholder="Nhập họ tên đầy đủ, ví dụ: Nguyễn Quốc Cường"
+            class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs bg-slate-50 text-slate-800 focus:bg-white outline-none font-bold"
+            required
+          />
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <!-- Gender -->
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">GIỚI TÍNH:</label>
+            <div class="flex items-center gap-4 py-2">
+              <label class="flex items-center gap-2 cursor-pointer font-bold">
+                <input type="radio" [(ngModel)]="formGender" name="formGender" value="Nam" class="w-4 h-4 text-indigo-600 cursor-pointer" />
+                <span>Nam</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer font-bold">
+                <input type="radio" [(ngModel)]="formGender" name="formGender" value="Nữ" class="w-4 h-4 text-indigo-600 cursor-pointer" />
+                <span>Nữ</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Reg date -->
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">NGÀY GHI DANH:</label>
+            <input 
+              type="date" 
+              [(ngModel)]="formRegDate" 
+              name="formRegDate"
+              class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs bg-slate-50 text-slate-850 font-bold"
+              required
+            />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <!-- Birth -->
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">NGÀY SINH:</label>
+            <input 
+              type="date" 
+              [(ngModel)]="formBirth" 
+              name="formBirth"
+              class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs bg-slate-50 text-slate-850 font-bold"
+              required
+            />
+          </div>
+
+          <!-- Phone -->
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">ĐIỆN THOẠI LIÊN HỆ:</label>
+            <input 
+              type="text" 
+              [(ngModel)]="formPhone" 
+              name="formPhone"
+              placeholder="Ví dụ: 0912..."
+              class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs bg-slate-50 text-slate-800 outline-none font-bold"
+              required
+            />
+          </div>
+        </div>
+
+        <!-- Footer Buttons -->
+        <div class="pt-4 border-t border-slate-100 flex items-center justify-end gap-2 text-xs">
+          <button 
+            type="button" 
+            (click)="closeFormModal()"
+            class="px-4.5 py-2.5 bg-slate-101 hover:bg-slate-200 text-slate-650 rounded-xl transition cursor-pointer font-bold"
+          >
+            Hủy Bỏ
+          </button>
+          <button 
+            type="submit"
+            class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition cursor-pointer font-bold flex items-center gap-2"
+          >
+            <app-icon name="check" class="w-4 h-4"></app-icon>
+            <span>{{ selectedStudent ? 'Lưu Cập Nhật' : 'Tạo Hồ Sơ Mới' }}</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Bulk CSV Import Modal -->
+  <div *ngIf="isImportModalOpen" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
+    <div class="bg-white rounded-2xl shadow-xl max-w-2xl w-full overflow-hidden border border-slate-100 animate-slideUp">
+      <div class="bg-slate-900 text-white px-6 py-4 flex items-center justify-between">
+        <h3 class="font-bold text-base flex items-center gap-2">
+          <app-icon name="upload" class="w-5 h-5 text-indigo-400"></app-icon>
+          <span>Nạp Nhanh Võ Sinh Bằng Excel (CSV)</span>
+        </h3>
+        <button (click)="closeImportModal()" class="text-slate-400 hover:text-white transition cursor-pointer">
+          <app-icon name="x" class="w-5 h-5"></app-icon>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-4 text-xs font-semibold font-sans">
+        <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl text-slate-500 font-medium">
+          <p class="font-bold text-slate-700 text-xs mb-1">Quy định cấu trúc dán CSV:</p>
+          <p>Dòng đầu là tiêu đề (được bỏ qua). Mỗi dòng tiếp theo có dạng:</p>
+          <code class="block bg-slate-800 text-emerald-450 p-2 text-[10px] rounded mt-2 font-mono select-all">
+            STT,Mã Võ Sinh,Họ Và Tên,Giới Tính,Ngày Sinh,Số Điện Thoại Phụ Huynh,Cấp Đai Hiện Tại,Ngày Đăng Ký<br/>
+            1,VS-2026-015,Nguyễn Quốc Bình,Nam,2014-05-12,0914115115,Trắng,2026-06-05
+          </code>
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">NỘI DUNG DỮ LIỆU SPREADSHEET (CHÉP TỪ EXCEL/CSV VÀ DÁN DƯỚI ĐÂY):</label>
+          <textarea 
+            [(ngModel)]="bulkCsvText"
+            rows="8" 
+            placeholder="Dán mã mẫu của bạn tại đây..."
+            class="w-full px-4 py-3 border border-slate-200 rounded-xl font-mono text-[10px] bg-slate-50 text-slate-800 outline-none focus:bg-white font-semibold"
+          ></textarea>
+        </div>
+
+        <div class="pt-4 border-t border-slate-100 flex items-center justify-end gap-2 text-xs">
+          <button 
+            type="button" 
+            (click)="closeImportModal()"
+            class="px-4.5 py-2.5 bg-slate-101 hover:bg-slate-200 text-slate-650 rounded-xl transition cursor-pointer"
+          >
+            Hủy bỏ
+          </button>
+          <button 
+            type="button" 
+            (click)="submitCsvImport()"
+            class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-750 text-white rounded-xl transition cursor-pointer font-bold"
+          >
+            NẠP HỒ SƠ VÕ ĐƯỜNG
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

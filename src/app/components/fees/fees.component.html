@@ -1,0 +1,209 @@
+<div class="space-y-6 animate-fadeIn font-sans">
+  <!-- Title block -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 font-sans">
+    <div>
+      <h2 class="text-2xl font-bold text-slate-800 tracking-tight font-sans">Sổ Quản Lý Thu Phí</h2>
+      <p class="text-slate-505 text-sm mt-0.5 font-medium">Quản lý đóng lệ phí thi nhảy đai, cập nhật hóa đơn và in danh sách biên lai</p>
+    </div>
+    
+    <button 
+      (click)="exportBilling()"
+      class="bg-indigo-600 hover:bg-indigo-755 text-white font-extrabold px-5 py-2.5 rounded-xl text-xs transition flex items-center gap-2 cursor-pointer shadow-md shadow-indigo-600/10"
+    >
+      <app-icon name="receipt" class="w-4 h-4"></app-icon>
+      <span>XUẤT BÁO CÁO THU CHI EXCEL</span>
+    </button>
+  </div>
+
+  <!-- Live financial widgets counters -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <!-- widget 1: Paid -->
+    <div class="bg-white p-5 rounded-2xl border border-slate-200/85 shadow-sm flex items-center justify-between">
+      <div class="space-y-1">
+        <span class="text-[10px] font-bold text-emerald-600 uppercase tracking-widest block">TỔNG LỆ PHÍ ĐÃ THU</span>
+        <h3 class="text-2xl font-extrabold text-emerald-600 font-mono">{{ formatCurrency(totalPaid) }} đ</h3>
+        <span class="inline-block px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[9px] font-black border border-emerald-100">
+          {{ countPaid }} HỌC VIÊN ĐÃ HOÀN TẤT
+        </span>
+      </div>
+      <div class="bg-emerald-50 text-emerald-600 p-4 rounded-xl flex items-center justify-center">
+        <app-icon name="check" class="w-5 h-5 text-emerald-650"></app-icon>
+      </div>
+    </div>
+
+    <!-- widget 2: Unpaid -->
+    <div class="bg-white p-5 rounded-2xl border border-rose-100 shadow-sm flex items-center justify-between">
+      <div class="space-y-1">
+        <span class="text-[10px] font-bold text-rose-655 uppercase tracking-widest block">LỆ PHÍ CÒN NỢ (CÔNG NỢ)</span>
+        <h3 class="text-2xl font-extrabold text-rose-650 font-mono">{{ formatCurrency(totalUnpaid) }} đ</h3>
+        <span class="inline-block px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-700 text-[9px] font-black border border-rose-100 font-sans">
+          {{ countUnpaid }} CHƯA ĐÓNG HỌC PHÍ THI
+        </span>
+      </div>
+      <div class="bg-rose-50 text-rose-600 p-4 rounded-xl flex items-center justify-center font-sans">
+        <app-icon name="alert" class="w-5 h-5 text-rose-650"></app-icon>
+      </div>
+    </div>
+
+    <!-- widget 3: Cumulatives Expected revenue -->
+    <div class="bg-white p-5 rounded-2xl border border-slate-200/85 shadow-sm flex items-center justify-between">
+      <div class="space-y-1">
+        <span class="text-[10px] font-bold text-indigo-650 uppercase tracking-widest block">DOANH THU KÌ VỌNG CỦA ĐỢT</span>
+        <h3 class="text-2xl font-extrabold text-indigo-700 font-mono">{{ formatCurrency(predictedTotal) }} đ</h3>
+        <span class="inline-block px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 text-[9px] font-black border border-indigo-100 uppercase">
+          Có {{ activeSessionRegs.length }} ứng viên tham dự nâng đai
+        </span>
+      </div>
+      <div class="bg-indigo-50 text-indigo-600 p-4 rounded-xl flex items-center justify-center font-sans">
+        <app-icon name="credit-card" class="w-5 h-5 text-indigo-650"></app-icon>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters & Dropdowns column setup -->
+  <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm grid grid-cols-1 md:grid-cols-3 gap-4 font-sans">
+    <!-- session selector -->
+    <div>
+      <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">CHỌN ĐỢT KIỂM TRA ĐAI:</label>
+      <select 
+        [ngModel]="activeSessionId" 
+        (ngModelChange)="onSessionIdChange($event)"
+        class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 outline-none bg-slate-50 hover:bg-white cursor-pointer transition font-sans"
+      >
+        <option *ngFor="let s of sessions" [value]="s.id">
+          {{ s.name }} ({{ s.id }})
+        </option>
+      </select>
+    </div>
+
+    <!-- state filter -->
+    <div>
+      <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 font-sans">TRẠNG THÁI SỔ TIỀN:</label>
+      <select 
+        [(ngModel)]="paymentFilter"
+        class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs font-bold text-slate-755 outline-none bg-slate-50 hover:bg-white cursor-pointer transition font-sans"
+      >
+        <option value="">-- Mọi Trạng Thái Thu --</option>
+        <option value="PAID">✅ Đã thu thành công</option>
+        <option value="UNPAID">❌ Chưa thu / Còn nợ</option>
+      </select>
+    </div>
+
+    <!-- search name -->
+    <div>
+      <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 font-sans">BÁN KÍNH LÙNG TÌM:</label>
+      <div class="relative font-sans animate-fadeIn">
+        <app-icon name="search" class="absolute left-3.5 top-3 w-4 h-4 text-slate-400"></app-icon>
+        <input 
+          type="text"
+          placeholder="Gõ tìm kiếm tên học viên, mã số..."
+          [(ngModel)]="searchTerm"
+          class="w-full pl-9.5 pr-4 py-2.5 border border-slate-200 rounded-xl text-xs font-semibold text-slate-755 focus:outline-none focus:bg-white bg-slate-50/50"
+        />
+      </div>
+    </div>
+  </div>
+
+  <!-- Billing Ledger List -->
+  <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden animate-fadeIn font-sans">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse table-auto align-middle font-sans">
+        <thead>
+          <tr class="bg-slate-50/75 border-b border-slate-200 text-slate-500 text-[11px] font-bold uppercase tracking-wider">
+            <th class="py-3.5 px-4 text-center w-16">STT</th>
+            <th class="py-3.5 px-4 w-32">MÃ VÕ SINH</th>
+            <th class="py-3.5 px-4">HỌ VÀ TÊN THÍ SINH</th>
+            <th class="py-3.5 px-4 text-center">NÂNG CẤP ĐAI</th>
+            <th class="py-3.5 px-4 text-center">ĐAI ĐẠT ĐƯỢC</th>
+            <th class="py-3.5 px-4 text-center font-bold">BIÊN LAI LỆ PHÍ</th>
+            <th class="py-3.5 px-4 text-center w-36">TRẠNG THÁI</th>
+            <th class="py-3.5 px-4">ĐÓNG DẤU GHI CHÚ BỔ SUNG</th>
+            <th class="py-3.5 px-4 text-center w-28 font-sans">XÁC MINH</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 text-slate-705 text-xs font-semibold">
+          <tr *ngIf="getFilteredRegs().length === 0">
+            <td colSpan="9" class="py-12 text-center text-slate-400">
+              <app-icon name="receipt" class="w-8 h-8 text-slate-300 mx-auto"></app-icon>
+              <p class="font-semibold text-slate-500 mt-2">Không tìm thấy biên lai thăng đai</p>
+              <p class="text-[11px] text-slate-400 mt-0.5">Vui lòng thử thay đổi lọc tìm kiếm</p>
+            </td>
+          </tr>
+
+          <tr *ngFor="let reg of getFilteredRegs(); let idx = index" class="hover:bg-slate-50/50 transition border-b border-slate-100">
+            <td class="py-3.5 px-4 text-center text-slate-400 font-bold bg-slate-50/30">{{ idx + 1 }}</td>
+            <td class="py-3.5 px-4 font-mono font-bold text-indigo-950">{{ reg.studentId }}</td>
+            <td class="py-3.5 px-4 font-bold text-slate-805 text-sm">{{ getStudentName(reg.studentId) }}</td>
+            <td class="py-3.5 px-4 text-center">
+              <span [class]="getBeltColorClass(reg.currentBelt)" class="px-2 py-0.5 rounded text-[10px] font-black uppercase text-center border">
+                {{ reg.currentBelt }}
+              </span>
+            </td>
+            <td class="py-3.5 px-4 text-center">
+              <span [class]="getBeltColorClass(reg.targetBelt)" class="px-2 py-0.5 rounded text-[10px] font-black uppercase text-center border">
+                {{ reg.targetBelt }}
+              </span>
+            </td>
+            <td class="py-3.5 px-4 text-center font-mono font-bold text-slate-805 text-[13px] bg-slate-50/15">
+              {{ formatCurrency(reg.examFee) }} đ
+            </td>
+            
+            <!-- Payment status badge -->
+            <td class="py-3.5 px-4 text-center_align">
+              <span [class]="reg.paymentStatus === 'PAID' ? 'bg-emerald-100 text-emerald-800 border-emerald-200' : 'bg-rose-100 text-rose-800 border-rose-200'" class="inline-block px-3 py-1 font-black rounded-full text-[9px] uppercase tracking-wide border">
+                {{ reg.paymentStatus === 'PAID' ? 'ĐÃ ĐÓNG PHÍ' : 'CHƯA ĐÓNG PHÍ' }}
+              </span>
+            </td>
+
+            <!-- Notes update layout -->
+            <td class="py-3.5 px-4 text-xs font-sans">
+              <div *ngIf="editingRegId !== reg.id" class="flex items-center justify-between group">
+                <span class="text-slate-505 font-medium italic truncate max-w-[200px] block">
+                  {{ reg.notes || 'Không ghi chú' }}
+                </span>
+                <button 
+                  (click)="startEditingNotes(reg.id, reg.notes || '')"
+                  class="opacity-0 group-hover:opacity-100 text-indigo-650 hover:underline text-[10px] font-bold py-0.5 px-1 ml-2 transition cursor-pointer"
+                >
+                  Sửa ý
+                </button>
+              </div>
+
+              <div *ngIf="editingRegId === reg.id" class="flex items-center gap-2 animate-fadeIn font-sans">
+                <input 
+                  type="text" 
+                  [(ngModel)]="tempNotes"
+                  class="flex-1 px-2.5 py-1.5 border border-slate-300 rounded bg-slate-100 focus:bg-white outline-none text-xs text-slate-800 font-bold"
+                  (keyup.enter)="saveNotes(reg.id)"
+                />
+                <button 
+                  (click)="saveNotes(reg.id)"
+                  class="bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold p-1.5 rounded-lg transition cursor-pointer"
+                >
+                  Lưu
+                </button>
+                <button 
+                  (click)="editingRegId = ''"
+                  class="bg-slate-200 hover:bg-slate-300 text-slate-650 font-extrabold p-1.5 rounded-lg transition cursor-pointer"
+                >
+                  Hủy
+                </button>
+              </div>
+            </td>
+
+            <!-- Micro direct toggle payment -->
+            <td class="py-3.5 px-4 text-center font-sans">
+              <button 
+                (click)="togglePayment.emit(reg.id)"
+                [class]="reg.paymentStatus === 'PAID' ? 'bg-rose-50 hover:bg-rose-100 text-rose-600' : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700'"
+                class="px-2.5 py-1.5 rounded-xl text-[9px] uppercase transition cursor-pointer font-extrabold border shadow-sm"
+              >
+                {{ reg.paymentStatus === 'PAID' ? 'HỦY LỆ PHÍ' : 'QUÉT ĐĂNG KÝ' }}
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

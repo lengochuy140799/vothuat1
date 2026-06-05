@@ -1,0 +1,6 @@
+{
+  "name": "Mabu System - Quản Lý Nâng Đai",
+  "description": "Hệ thống chuyên nghiệp quản lý võ sinh, kỳ thi thăng cấp đai, danh sách dự thi và thống kê lệ phí thi võ đường",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
