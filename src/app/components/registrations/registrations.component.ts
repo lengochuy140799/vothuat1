@@ -24,6 +24,7 @@ export class RegistrationsComponent implements OnChanges {
   @Output() deleteRegistrationId = new EventEmitter<string>();
   @Output() togglePayment = new EventEmitter<string>();
   @Output() notify = new EventEmitter<string>();
+  @Output() addStudent = new EventEmitter<Student>();
 
   currentBeltFilter: string = '';
   searchTerm: string = '';
@@ -35,6 +36,15 @@ export class RegistrationsComponent implements OnChanges {
   fee: number = 200000;
   paymentStatus: 'PAID' | 'UNPAID' = 'UNPAID';
   notes: string = '';
+
+  // Quick Add Student fields
+  isAddStudentModalOpen: boolean = false;
+  newStudentName: string = '';
+  newStudentGender: 'Nam' | 'Nữ' = 'Nam';
+  newStudentBirth: string = '2012-01-01';
+  newStudentPhone: string = '';
+  newStudentAddress: string = '';
+  newStudentBelt: 'Trắng' | 'Vàng' | 'Xanh' | 'Đỏ' | 'Đen' = 'Trắng';
 
   activeSession: ExamSession | null = null;
   activeSessionRegs: Registration[] = [];
@@ -185,5 +195,65 @@ export class RegistrationsComponent implements OnChanges {
       case 'Đen': return 'bg-slate-900 text-slate-100 border-slate-950';
       default: return 'bg-slate-50 text-slate-600 border-slate-200';
     }
+  }
+
+  generateNewId(): string {
+    const maxNum = this.students.reduce((max, s) => {
+      const match = s.id.match(/VS-\d+-(\d+)/);
+      if (match) {
+        const num = parseInt(match[1]);
+        return num > max ? num : max;
+      }
+      return max;
+    }, 0);
+    const nextNumString = String(maxNum + 1).padStart(3, '0');
+    return `VS-2026-${nextNumString}`;
+  }
+
+  openAddStudentModal() {
+    this.newStudentName = '';
+    this.newStudentGender = 'Nam';
+    this.newStudentBirth = '2012-01-01';
+    this.newStudentPhone = '';
+    this.newStudentAddress = '';
+    this.newStudentBelt = 'Trắng';
+    this.isAddStudentModalOpen = true;
+  }
+
+  closeAddStudentModal() {
+    this.isAddStudentModalOpen = false;
+  }
+
+  handleAddStudentSubmit(e: Event) {
+    e.preventDefault();
+    if (!this.newStudentName.trim()) {
+      alert('Vui lòng nhập tên võ sinh!');
+      return;
+    }
+
+    const newId = this.generateNewId();
+    const studentData: Student = {
+      id: newId,
+      name: this.newStudentName.trim(),
+      gender: this.newStudentGender,
+      birth: this.newStudentBirth,
+      phone: this.newStudentPhone.trim(),
+      address: this.newStudentAddress.trim(),
+      currentBelt: this.newStudentBelt,
+      registrationDate: new Date().toISOString().split('T')[0],
+      createdAt: new Date().toISOString()
+    };
+
+    // Emit student add
+    this.addStudent.emit(studentData);
+    this.notify.emit(`Đã thêm thành công võ sinh mới: ${studentData.name} (${studentData.id})`);
+
+    // Auto select this student
+    this.selectedStudentId = studentData.id;
+    this.targetBelt = getNextBelt(studentData.currentBelt);
+    this.fee = getExamFeeForBelt(this.targetBelt);
+
+    // Close student modal
+    this.closeAddStudentModal();
   }
 }

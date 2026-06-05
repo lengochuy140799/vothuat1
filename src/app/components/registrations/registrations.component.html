@@ -17,7 +17,7 @@
 
       <button 
         (click)="openRegisterModal()"
-        class="bg-indigo-600 hover:bg-indigo-755 text-white font-extrabold px-5 py-2.5 rounded-xl text-xs transition flex items-center gap-2 cursor-pointer shadow-md shadow-indigo-600/10"
+        class="bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold px-5 py-2.5 rounded-xl text-xs transition flex items-center gap-2 cursor-pointer shadow-md shadow-indigo-600/10"
       >
         <app-icon name="user-plus" class="w-4 h-4"></app-icon>
         <span>ĐĂNG KÝ VÕ SINH DỰ THI</span>
@@ -163,7 +163,17 @@
       <form (submit)="handleNewRegistrationSubmit($event)" class="p-6 space-y-4 text-xs font-semibold text-slate-600 font-sans">
         <!-- Selector of students -->
         <div>
-          <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5 font-sans">1. Tìm kiếm và chọn võ sinh *</label>
+          <div class="flex items-center justify-between mb-1.5">
+            <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 font-sans">1. Tìm kiếm và chọn võ sinh *</label>
+            <button 
+              type="button" 
+              (click)="openAddStudentModal()"
+              class="text-indigo-600 hover:text-indigo-800 text-[10px] font-extrabold flex items-center gap-1 cursor-pointer hover:underline"
+            >
+              <app-icon name="user-plus" class="w-3.5 h-3.5"></app-icon>
+              <span>+ Thêm Võ Sinh Mới</span>
+            </button>
+          </div>
           <div class="space-y-2">
             <div class="relative">
               <app-icon name="search" class="absolute left-3.5 top-3 w-4 h-4 text-slate-400"></app-icon>
@@ -273,9 +283,131 @@
           
           <button 
             type="submit"
-            class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-755 text-white rounded-xl transition font-bold cursor-pointer"
+            class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition font-bold cursor-pointer"
           >
             NỘP HỒ SƠ ĐĂNG KÝ
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Quick Add Student Sub-Modal Overlay -->
+  <div *ngIf="isAddStudentModalOpen" id="quick-add-student-overlay" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border border-slate-100 animate-slideUp">
+      <!-- Header -->
+      <div class="bg-indigo-950 text-white px-6 py-4 flex items-center justify-between">
+        <h3 class="font-bold text-sm flex items-center gap-2">
+          <app-icon name="user-plus" class="w-4.5 h-4.5 text-indigo-400"></app-icon>
+          <span>Thêm Võ Sinh Gốc Mới</span>
+        </h3>
+        <button type="button" (click)="closeAddStudentModal()" class="text-slate-400 hover:text-white transition cursor-pointer">
+          <app-icon name="x" class="w-4.5 h-4.5"></app-icon>
+        </button>
+      </div>
+
+      <!-- Quick Form Content -->
+      <form (submit)="handleAddStudentSubmit($event)" class="p-6 space-y-4 text-xs font-semibold text-slate-600 font-sans">
+        <!-- Quick fields -->
+        <div>
+          <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Họ và tên võ sinh *</label>
+          <input 
+            type="text" 
+            [(ngModel)]="newStudentName" 
+            name="newStudentName"
+            placeholder="Nhập họ tên đầy đủ..."
+            class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs bg-slate-50 text-slate-800 focus:bg-white outline-none font-bold"
+            required
+          />
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <!-- Gender Select -->
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Giới tính</label>
+            <div class="flex items-center gap-4 py-1">
+              <label class="flex items-center gap-1.5 cursor-pointer font-bold">
+                <input type="radio" [(ngModel)]="newStudentGender" name="newStudentGender" value="Nam" class="w-4 h-4 cursor-pointer text-indigo-600" />
+                <span>Nam</span>
+              </label>
+              <label class="flex items-center gap-1.5 cursor-pointer font-bold">
+                <input type="radio" [(ngModel)]="newStudentGender" name="newStudentGender" value="Nữ" class="w-4 h-4 cursor-pointer text-indigo-600" />
+                <span>Nữ</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Current Belt -->
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Cấp đai hiện tại</label>
+            <select 
+              [(ngModel)]="newStudentBelt" 
+              name="newStudentBelt"
+              class="w-full px-2.5 py-2 border border-slate-200 rounded-lg bg-slate-50 text-slate-800 font-bold"
+            >
+              <option value="Trắng">Trắng (Mặc định)</option>
+              <option value="Vàng">Vàng</option>
+              <option value="Xanh">Xanh</option>
+              <option value="Đỏ">Đỏ</option>
+              <option value="Đen">Đen</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <!-- Birth -->
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Ngày tháng năm sinh *</label>
+            <input 
+              type="date" 
+              [(ngModel)]="newStudentBirth" 
+              name="newStudentBirth"
+              class="w-full px-2.5 py-2 border border-slate-200 rounded-lg bg-slate-50 text-slate-800 font-bold"
+              required
+            />
+          </div>
+
+          <!-- Parent Contact Phone -->
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Điện thoại liên hệ *</label>
+            <input 
+              type="text" 
+              [(ngModel)]="newStudentPhone" 
+              name="newStudentPhone"
+              placeholder="SĐT liên hệ di động..."
+              class="w-full px-2.5 py-2 border border-slate-200 rounded-lg bg-slate-50 text-slate-800 font-bold outline-none"
+              required
+            />
+          </div>
+        </div>
+
+        <!-- Address -->
+        <div>
+          <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Địa chỉ thường trú</label>
+          <input 
+            type="text" 
+            [(ngModel)]="newStudentAddress" 
+            name="newStudentAddress"
+            placeholder="Số nhà, ngõ ngách, tên đường..."
+            class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs bg-slate-50 text-slate-800 focus:bg-white outline-none font-bold"
+          />
+        </div>
+
+        <!-- Submit actions -->
+        <div class="pt-4 border-t border-slate-150 flex items-center justify-end gap-2 text-xs">
+          <button 
+            type="button" 
+            (click)="closeAddStudentModal()"
+            class="px-4.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl transition cursor-pointer font-bold"
+          >
+            Hủy Bỏ
+          </button>
+          
+          <button 
+            type="submit"
+            class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition font-bold cursor-pointer"
+          >
+            LƯU VÕ SINH
           </button>
         </div>
       </form>
