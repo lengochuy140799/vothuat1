@@ -6,6 +6,7 @@ import com.mabu.system.entity.Tuition;
 import com.mabu.system.exception.ResourceNotFoundException;
 import com.mabu.system.entity.TuitionMonth;
 import com.mabu.system.mapper.TuitionMapper;
+import com.mabu.system.repository.RegistrationRepository;
 import com.mabu.system.repository.StudentRepository;
 import com.mabu.system.repository.TuitionMonthRepository;
 import com.mabu.system.repository.TuitionRepository;
@@ -25,6 +26,7 @@ public class TuitionService {
     private final TuitionRepository tuitionRepository;
     private final StudentRepository studentRepository;
     private final TuitionMonthRepository tuitionMonthRepository;
+    private final RegistrationRepository registrationRepository;
     private final TuitionMapper tuitionMapper;
 
     @Transactional(readOnly = true)
