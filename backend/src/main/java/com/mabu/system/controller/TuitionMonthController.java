@@ -44,31 +44,9 @@ public class TuitionMonthController {
     public ResponseEntity<Void> deleteMonth(@PathVariable String monthPart1, @PathVariable String monthPart2) {
         String month = monthPart1 + "/" + monthPart2;
 
-        // Find all student IDs that have records in either Tuition or Registration for this month
-        java.util.Set<String> studentIds = new java.util.HashSet<>();
-
-        registrationRepository.findByMonthWithDetails(month).forEach(r -> {
-            if (r.getStudent() != null) {
-                studentIds.add(r.getStudent().getId());
-            }
-        });
-
-        tuitionRepository.findByMonth(month).forEach(t -> {
-            if (t.getStudent() != null) {
-                studentIds.add(t.getStudent().getId());
-            }
-        });
-
         // First clean up records in tuition and registration of this month to prevent constraint issues
         tuitionRepository.deleteByMonth(month);
         registrationRepository.deleteByMonth(month);
-
-        // Delete each of those students physically and completely from all tables
-        for (String studentId : studentIds) {
-            tuitionRepository.deleteByStudentId(studentId);
-            registrationRepository.deleteByStudentId(studentId);
-            studentRepository.deleteById(studentId);
-        }
 
         tuitionMonthRepository.deleteById(month);
         return ResponseEntity.noContent().build();

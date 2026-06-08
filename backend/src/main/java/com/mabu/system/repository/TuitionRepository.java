@@ -29,6 +29,11 @@ public interface TuitionRepository extends JpaRepository<Tuition, String> {
 
     @Modifying
     @Transactional
+    @Query("DELETE FROM Tuition t WHERE t.student.id = :studentId AND t.month = :month")
+    void deleteByStudentIdAndMonth(@Param("studentId") String studentId, @Param("month") String month);
+
+    @Modifying
+    @Transactional
     @Query("DELETE FROM Tuition t WHERE t.month = :month")
     void deleteByMonth(@Param("month") String month);
 }

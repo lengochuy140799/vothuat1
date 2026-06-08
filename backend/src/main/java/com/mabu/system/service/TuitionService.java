@@ -137,31 +137,14 @@ public class TuitionService {
 
     @Transactional
     public void deleteTuition(String id) {
-        String studentId = null;
         Optional<Tuition> optTuition = tuitionRepository.findById(id);
         if (optTuition.isPresent()) {
-            studentId = optTuition.get().getStudent().getId();
-        } else if (id != null && id.startsWith("TUI-") && id.length() >= 11) {
-            String studentIdSuffix = id.substring(11); // e.g. "VS2026-003" / "VS2026-002"
+            Tuition tuition = optTuition.get();
+            String studentId = tuition.getStudent().getId();
+            String month = tuition.getMonth();
 
-            Optional<Student> studentOpt = studentRepository.findById(studentIdSuffix);
-            if (studentOpt.isEmpty()) {
-                List<Student> students = studentRepository.findAll();
-                studentOpt = students.stream()
-                        .filter(s -> s.getId().replace("-", "").equalsIgnoreCase(studentIdSuffix) 
-                                  || s.getId().equalsIgnoreCase(studentIdSuffix))
-                        .findFirst();
-            }
-
-            if (studentOpt.isPresent()) {
-                studentId = studentOpt.get().getId();
-            }
-        }
-
-        if (studentId != null) {
-            tuitionRepository.deleteByStudentId(studentId);
-            registrationRepository.deleteByStudentId(studentId);
-            studentRepository.deleteById(studentId);
+            tuitionRepository.deleteByStudentIdAndMonth(studentId, month);
+            registrationRepository.deleteByStudentIdAndMonth(studentId, month);
         }
     }
 

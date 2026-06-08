@@ -30,6 +30,11 @@ public interface RegistrationRepository extends JpaRepository<Registration, Stri
 
     @Modifying
     @Transactional
+    @Query("DELETE FROM Registration r WHERE r.student.id = :studentId AND r.month = :month")
+    void deleteByStudentIdAndMonth(@Param("studentId") String studentId, @Param("month") String month);
+
+    @Modifying
+    @Transactional
     @Query("DELETE FROM Registration r WHERE r.month = :month")
     void deleteByMonth(@Param("month") String month);
 }
