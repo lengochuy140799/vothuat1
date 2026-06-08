@@ -10,8 +10,7 @@ import { getExamFeeForBelt, getNextBelt } from '../../../mockData';
   selector: 'app-registrations',
   standalone: true,
   imports: [CommonModule, FormsModule, IconComponent],
-  templateUrl: './registrations.component.html',
-  styleUrls: ['./registrations.component.css']
+  templateUrl: './registrations.component.html'
 })
 export class RegistrationsComponent implements OnChanges {
   @Input() students: Student[] = [];
@@ -265,3 +264,4 @@ export class RegistrationsComponent implements OnChanges {
     this.closeAddStudentModal();
   }
 }
+
