@@ -384,7 +384,7 @@ export class StudentsComponent implements OnInit {
       tuitionRec.status = newStatus;
 
       // Sync update to backend
-      const tuiId = `TUI-${this.activeMonth.replace("/", "")}-${item.id.replace("-", "")}`;
+      const tuiId = `TUI-${this.activeMonth.replace(/\//g, '')}-${item.id.replace(/-/g, '')}`;
       this.apiService.updateTuition(tuiId, {
         studentId: item.id,
         month: this.activeMonth,
@@ -494,7 +494,7 @@ export class StudentsComponent implements OnInit {
         rec.status = this.formTuitionStatus;
 
         // Sync update to backend
-        const tuiId = `TUI-${this.activeMonth.replace("/", "")}-${studentData.id.replace("-", "")}`;
+        const tuiId = `TUI-${this.activeMonth.replace(/\//g, '')}-${studentData.id.replace(/-/g, '')}`;
         this.apiService.updateTuition(tuiId, {
           studentId: studentData.id,
           month: this.activeMonth,
@@ -575,18 +575,25 @@ export class StudentsComponent implements OnInit {
   }
 
   deleteStudent(item: MonthlyBillingItem) {
-    if (confirm(`Bạn chắc chắn muốn XÓA VĨNH VIỄN võ sinh ${item.name} (${item.id}) khỏi toàn bộ hệ thống? Thao tác này sẽ xóa hồ sơ gốc và lịch sử thuộc tất cả các bảng (học phí, kì thi).`)) {
-      // Remove from local tuition database across all months immediately
-      Object.keys(this.tuitionDb).forEach(monthKey => {
-        if (this.tuitionDb[monthKey]) {
-          this.tuitionDb[monthKey] = this.tuitionDb[monthKey].filter(r => r.studentId !== item.id);
+    if (confirm(`Bạn chắc chắn muốn XÓA VÕ SINH ${item.name} (${item.id}) khỏi sổ học phí Tháng ${this.activeMonth}? Thao tác này chỉ xóa dữ liệu học phí/đăng ký của tháng này, hoàn toàn không xóa hồ sơ gốc của học viên.`)) {
+      // Remove from local tuition database for this month
+      if (this.tuitionDb[this.activeMonth]) {
+        this.tuitionDb[this.activeMonth] = this.tuitionDb[this.activeMonth].filter(r => r.studentId !== item.id);
+      }
+
+      // Sync backend: delete tuition for this student & month
+      const tuiId = `TUI-${this.activeMonth.replace(/\//g, '')}-${item.id.replace(/-/g, '')}`;
+      this.apiService.deleteTuition(tuiId).subscribe({
+        next: () => {
+          this.notify.emit(`Đã xóa võ sinh ${item.name} khỏi học phí Tháng ${this.activeMonth}.`);
+          this.reloadState.emit(); // Reload all state (registrations, active students etc.)
+        },
+        error: (err) => {
+          console.error('Failed to delete tuition record:', err);
+          const errorMsg = this.getErrorMessage(err, 'Lỗi khi xóa học viên khỏi tháng.');
+          this.notify.emit({ message: `Lỗi: ${errorMsg}`, isError: true });
         }
       });
-
-      // Dispatch action to update store and call backend Student DELETE API
-      this.deleteStudentId.emit(item.id);
-      
-      this.notify.emit(`Đã xóa vĩnh viễn võ sinh ${item.name} khỏi hệ thống.`);
       this.studentCurrentPage = 1;
     }
   }

@@ -145,6 +145,25 @@ public class TuitionService {
 
             tuitionRepository.deleteByStudentIdAndMonth(studentId, month);
             registrationRepository.deleteByStudentIdAndMonth(studentId, month);
+        } else if (id != null && id.startsWith("TUI-") && id.length() >= 11) {
+            try {
+                String monthPart = id.substring(4, 10);
+                String rawStudentId = id.substring(11);
+                String month = monthPart.substring(0, 2) + "/" + monthPart.substring(2);
+                
+                // Reconstruct standard hyphenated ID if it was fully stripped
+                String studentId = rawStudentId;
+                if (rawStudentId.startsWith("VS") && rawStudentId.length() == 9) {
+                    studentId = "VS-" + rawStudentId.substring(2, 6) + "-" + rawStudentId.substring(6);
+                } else if (rawStudentId.startsWith("HV") && rawStudentId.length() == 9) {
+                    studentId = "HV-" + rawStudentId.substring(2, 6) + "-" + rawStudentId.substring(6);
+                }
+                
+                tuitionRepository.deleteByStudentIdAndMonth(studentId, month);
+                registrationRepository.deleteByStudentIdAndMonth(studentId, month);
+            } catch (Exception e) {
+                // Ignore decoding errors and fail gracefully
+            }
         }
     }
 
