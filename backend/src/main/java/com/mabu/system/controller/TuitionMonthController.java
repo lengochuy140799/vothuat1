@@ -41,8 +41,6 @@ public class TuitionMonthController {
     @Transactional
     public ResponseEntity<Void> deleteMonth(@PathVariable String monthPart1, @PathVariable String monthPart2) {
         String month = monthPart1 + "/" + monthPart2;
-        tuitionRepository.deleteByMonth(month);
-        registrationRepository.deleteByMonth(month);
         tuitionMonthRepository.deleteById(month);
         return ResponseEntity.noContent().build();
     }
