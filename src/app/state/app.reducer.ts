@@ -11,6 +11,7 @@ export interface AppState {
   notification: {
     message: string;
     show: boolean;
+    isError?: boolean;
   };
 }
 
@@ -21,7 +22,8 @@ export const initialAppState: AppState = {
   activeSessionId: 'EX-2026-Q2',
   notification: {
     message: '',
-    show: false
+    show: false,
+    isError: false
   }
 };
 
@@ -155,9 +157,9 @@ export const appReducer = createReducer(
   })),
 
   // Notifications
-  on(AppActions.showSuccessNotification, (state, { message }) => ({
+  on(AppActions.showSuccessNotification, (state, { message, isError }) => ({
     ...state,
-    notification: { message, show: true }
+    notification: { message, show: true, isError: !!isError }
   })),
 
   on(AppActions.clearNotification, (state) => ({

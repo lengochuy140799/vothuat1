@@ -43,7 +43,7 @@ export class StudentsComponent implements OnInit {
   @Output() updateStudent = new EventEmitter<Student>();
   @Output() deleteStudentId = new EventEmitter<string>();
   @Output() bulkImport = new EventEmitter<Student[]>();
-  @Output() notify = new EventEmitter<string>();
+  @Output() notify = new EventEmitter<any>();
   @Output() reloadState = new EventEmitter<void>();
 
   // Filter and input bounds
@@ -194,7 +194,11 @@ export class StudentsComponent implements OnInit {
           this.studentCurrentPage = 1;
           this.reloadState.emit(); // Sync NgRx store state (registrations etc)
         },
-        error: (err) => console.error('Failed to sync cloned tuition month in DB:', err)
+        error: (err) => {
+          console.error('Failed to sync cloned tuition month in DB:', err);
+          const errorMsg = this.getErrorMessage(err, 'Lỗi khi sao chép tháng học phí.');
+          this.notify.emit({ message: `Lỗi: ${errorMsg}`, isError: true });
+        }
       });
     } else {
       // Just save the simple empty tuition month to DB
@@ -206,7 +210,11 @@ export class StudentsComponent implements OnInit {
           this.notify.emit(`Đã khởi tạo thành công sổ theo dõi học phí Tháng ${newMonthKey}!`);
           this.studentCurrentPage = 1;
         },
-        error: (err) => console.error('Failed to save initialized month to DB:', err)
+        error: (err) => {
+          console.error('Failed to save initialized month to DB:', err);
+          const errorMsg = this.getErrorMessage(err, 'Lỗi khi tạo tháng học phí mới.');
+          this.notify.emit({ message: `Lỗi: ${errorMsg}`, isError: true });
+        }
       });
     }
 
@@ -247,7 +255,8 @@ export class StudentsComponent implements OnInit {
       },
       error: (err) => {
         console.error('Failed to delete tuition month from DB:', err);
-        alert(`Không thể xóa sổ tháng từ hệ thống database. Vui lòng liên hệ quản trị viên.`);
+        const errorMsg = this.getErrorMessage(err, 'Không thể xóa sổ tháng từ hệ thống database.');
+        this.notify.emit({ message: `Lỗi: ${errorMsg}`, isError: true });
         this.closeDeleteMonthModal();
       }
     });
@@ -382,11 +391,17 @@ export class StudentsComponent implements OnInit {
         status: newStatus,
         fee: tuitionRec.fee
       }).subscribe({
-        next: () => console.log('Successfully toggled tuition status in DB'),
-        error: (err) => console.error('Failed to sync toggle tuition status in DB:', err)
+        next: () => {
+          console.log('Successfully toggled tuition status in DB');
+          this.notify.emit(`Đã cập nhật trạng thái học phí của ${item.name}`);
+        },
+        error: (err) => {
+          console.error('Failed to sync toggle tuition status in DB:', err);
+          tuitionRec.status = current; // Rollback
+          const errorMsg = this.getErrorMessage(err, 'Lỗi cập nhật học phí.');
+          this.notify.emit({ message: `Lỗi: ${errorMsg}`, isError: true });
+        }
       });
-
-      this.notify.emit(`Đã cập nhật trạng thái học phí của ${item.name}`);
     }
   }
 
@@ -486,15 +501,22 @@ export class StudentsComponent implements OnInit {
           status: this.formTuitionStatus,
           fee: this.formFee
         }).subscribe({
-          next: () => console.log('Successfully updated tuition in DB'),
-          error: (err) => console.error('Failed to sync tuition update in DB:', err)
+          next: () => {
+            console.log('Successfully updated tuition in DB');
+            this.notify.emit(`Đã cập nhật thông tin võ sinh ${this.formName}`);
+          },
+          error: (err) => {
+            console.error('Failed to sync tuition update in DB:', err);
+            const errorMsg = this.getErrorMessage(err, 'Lỗi cập nhật học phí.');
+            this.notify.emit({ message: `Lỗi: ${errorMsg}`, isError: true });
+          }
         });
+      } else {
+        this.notify.emit(`Đã cập nhật thông tin võ sinh ${this.formName}`);
       }
-
-      this.notify.emit(`Đã cập nhật thông tin võ sinh ${this.formName}`);
     } else {
       if (this.students.some(s => s.id === studentData.id)) {
-        this.notify.emit(`Mã võ sinh ${studentData.id} đã tồn tại trong hệ thống!`);
+        this.notify.emit({ message: `Mã võ sinh ${studentData.id} đã tồn tại trong hệ thống!`, isError: true });
         return;
       }
       
@@ -535,10 +557,18 @@ export class StudentsComponent implements OnInit {
               this.addStudent.emit({ student: studentData, month: this.activeMonth });
               this.notify.emit(`Đã ghi danh và cập nhật bách khoa học phí võ sinh ${this.formName}`);
             },
-            error: (err) => console.error('Failed to sync tuition to database:', err)
+            error: (err) => {
+              console.error('Failed to sync tuition to database:', err);
+              const errorMsg = this.getErrorMessage(err, 'Lỗi khởi tạo học phí võ sinh.');
+              this.notify.emit({ message: `Lỗi: ${errorMsg}`, isError: true });
+            }
           });
         },
-        error: (err) => console.error('Failed to sync student:', err)
+        error: (err) => {
+          console.error('Failed to sync student:', err);
+          const errorMsg = this.getErrorMessage(err, 'Lỗi thêm mới võ sinh.');
+          this.notify.emit({ message: `Lỗi: ${errorMsg}`, isError: true });
+        }
       });
     }
     this.closeFormModal();
@@ -714,6 +744,21 @@ export class StudentsComponent implements OnInit {
       console.error(err);
       this.notify.emit('Có lỗi xảy ra khi tổng hợp dữ liệu!');
     }
+  }
+
+  getErrorMessage(err: any, defaultMsg: string): string {
+    if (err && err.error) {
+      if (typeof err.error === 'string') {
+        return err.error;
+      }
+      if (err.error.message) {
+        return err.error.message;
+      }
+    }
+    if (err && err.message) {
+      return err.message;
+    }
+    return defaultMsg;
   }
 
   formatDate(dateStr: string): string {

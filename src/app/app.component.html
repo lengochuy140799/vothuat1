@@ -100,9 +100,19 @@
   <!-- 3. System Alerts Toast Messages -->
   <div 
     *ngIf="(notification$ | async)?.show" 
-    class="fixed bottom-6 right-6 bg-slate-900 border border-slate-800 text-slate-100 px-5 py-4 rounded-xl flex items-center gap-3 shadow-2xl z-50 animate-fadeIn"
+    class="fixed bottom-6 right-6 px-5 py-4 rounded-xl flex items-center gap-3 shadow-2xl z-50 animate-fadeIn border"
+    [class.bg-rose-950]="(notification$ | async)?.isError"
+    [class.border-rose-800]="(notification$ | async)?.isError"
+    [class.text-rose-100]="(notification$ | async)?.isError"
+    [class.bg-slate-900]="!(notification$ | async)?.isError"
+    [class.border-slate-800]="!(notification$ | async)?.isError"
+    [class.text-slate-100]="!(notification$ | async)?.isError"
   >
-    <div class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></div>
+    <div 
+      class="w-2.5 h-2.5 rounded-full animate-pulse"
+      [class.bg-rose-500]="(notification$ | async)?.isError"
+      [class.bg-emerald-500]="!(notification$ | async)?.isError"
+    ></div>
     <span class="text-xs font-bold leading-normal tracking-wide">
       {{ (notification$ | async)?.message }}
     </span>

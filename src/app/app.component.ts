@@ -71,8 +71,12 @@ export class AppComponent implements OnInit {
     this.activeTab = tab;
   }
 
-  onNotificationTrigger(message: string) {
-    this.store.dispatch(AppActions.showSuccessNotification({ message }));
+  onNotificationTrigger(event: any) {
+    if (typeof event === 'string') {
+      this.store.dispatch(AppActions.showSuccessNotification({ message: event, isError: false }));
+    } else if (event && typeof event === 'object' && event.message) {
+      this.store.dispatch(AppActions.showSuccessNotification({ message: event.message, isError: !!event.isError }));
+    }
   }
 
   // Active Session Filter handler

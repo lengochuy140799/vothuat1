@@ -30,5 +30,5 @@ export const updateRegistrationNotes = createAction('[Registration] Update Regis
 export const resetToMockData = createAction('[App] Reset To Mock Data');
 
 // Notifications
-export const showSuccessNotification = createAction('[Notification] Show Success', props<{ message: string }>());
+export const showSuccessNotification = createAction('[Notification] Show Success', props<{ message: string; isError?: boolean }>());
 export const clearNotification = createAction('[Notification] Clear');
