@@ -17,6 +17,9 @@ public interface TuitionRepository extends JpaRepository<Tuition, String> {
     @Query("SELECT t FROM Tuition t JOIN FETCH t.student WHERE t.month = :month AND t.isDeleted = false ORDER BY t.createdAt DESC")
     List<Tuition> findByMonthActive(@Param("month") String month);
 
+    @Query("SELECT t FROM Tuition t JOIN FETCH t.student WHERE t.month = :month")
+    List<Tuition> findByMonth(@Param("month") String month);
+
     Optional<Tuition> findByStudentIdAndMonth(String studentId, String month);
 
     @Modifying
