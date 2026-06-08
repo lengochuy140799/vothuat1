@@ -29,19 +29,31 @@ export const appReducer = createReducer(
   initialAppState,
 
   // Load state successfully
-  on(AppActions.loadInitialStateSuccess, (state, { students, sessions, registrations, activeSessionId }) => ({
-    ...state,
-    students,
-    sessions,
-    registrations,
-    activeSessionId
-  })),
+  on(AppActions.loadInitialStateSuccess, (state, { students, sessions, registrations, activeSessionId }) => {
+    const studentMap = new Map<string, Student>();
+    students.forEach(s => {
+      if (s && s.id) {
+        studentMap.set(s.id, s);
+      }
+    });
+    const uniqueStudents = Array.from(studentMap.values());
+    return {
+      ...state,
+      students: uniqueStudents,
+      sessions,
+      registrations,
+      activeSessionId
+    };
+  }),
 
   // Student Actions
-  on(AppActions.addStudent, (state, { student }) => ({
-    ...state,
-    students: [student, ...state.students]
-  })),
+  on(AppActions.addStudent, (state, { student }) => {
+    const filtered = state.students.filter(s => s.id !== student.id);
+    return {
+      ...state,
+      students: [student, ...filtered]
+    };
+  }),
 
   on(AppActions.updateStudent, (state, { student }) => {
     // Sync currentBelt checks inside active open session registrations
