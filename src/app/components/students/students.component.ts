@@ -749,8 +749,35 @@ export class StudentsComponent implements OnInit {
   getErrorMessage(err: any, defaultMsg: string): string {
     if (err && err.error) {
       if (typeof err.error === 'string') {
-        return err.error;
+        try {
+          const parsed = JSON.parse(err.error);
+          if (parsed && parsed.details && typeof parsed.details === 'object' && !Array.isArray(parsed.details)) {
+            const messages = Object.values(parsed.details).filter(v => !!v).map(v => String(v));
+            if (messages.length > 0) {
+              return messages.join(', ');
+            }
+          }
+          if (parsed && parsed.message) {
+            return parsed.message;
+          }
+        } catch {
+          return err.error;
+        }
       }
+
+      if (err.error.details && typeof err.error.details === 'object' && !Array.isArray(err.error.details)) {
+        const details = err.error.details;
+        const messages: string[] = [];
+        for (const key of Object.keys(details)) {
+          if (details[key]) {
+            messages.push(String(details[key]));
+          }
+        }
+        if (messages.length > 0) {
+          return messages.join(', ');
+        }
+      }
+
       if (err.error.message) {
         return err.error.message;
       }
