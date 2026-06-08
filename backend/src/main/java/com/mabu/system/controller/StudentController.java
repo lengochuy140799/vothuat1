@@ -22,6 +22,12 @@ public class StudentController {
         return ResponseEntity.ok(studentService.getAllStudents());
     }
 
+    @GetMapping("/by-month/{month:.+}")
+    public ResponseEntity<List<StudentDTO>> getStudentsByMonth(@PathVariable String month) {
+        // Since month has "/" e.g. "06/2026", it's passed as a path variable or request param
+        return ResponseEntity.ok(studentService.getStudentsByMonth(month));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<StudentDTO> getStudentById(@PathVariable String id) {
         return ResponseEntity.ok(studentService.getStudentById(id));

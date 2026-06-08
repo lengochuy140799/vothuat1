@@ -4,8 +4,10 @@ import com.mabu.system.dto.TuitionDTO;
 import com.mabu.system.entity.Student;
 import com.mabu.system.entity.Tuition;
 import com.mabu.system.exception.ResourceNotFoundException;
+import com.mabu.system.entity.TuitionMonth;
 import com.mabu.system.mapper.TuitionMapper;
 import com.mabu.system.repository.StudentRepository;
+import com.mabu.system.repository.TuitionMonthRepository;
 import com.mabu.system.repository.TuitionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,6 +24,7 @@ public class TuitionService {
 
     private final TuitionRepository tuitionRepository;
     private final StudentRepository studentRepository;
+    private final TuitionMonthRepository tuitionMonthRepository;
     private final TuitionMapper tuitionMapper;
 
     @Transactional(readOnly = true)
@@ -53,6 +56,10 @@ public class TuitionService {
                             .build();
                     return studentRepository.save(stub);
                 });
+
+        if (!tuitionMonthRepository.existsById(dto.getMonth())) {
+            tuitionMonthRepository.save(TuitionMonth.builder().month(dto.getMonth()).build());
+        }
 
         Optional<Tuition> existing = tuitionRepository.findByStudentIdAndMonth(dto.getStudentId(), dto.getMonth());
         Tuition tuition;
@@ -101,6 +108,10 @@ public class TuitionService {
 
     @Transactional
     public List<TuitionDTO> clonePreviousMonth(String currentMonth, String prevMonth) {
+        if (!tuitionMonthRepository.existsById(currentMonth)) {
+            tuitionMonthRepository.save(TuitionMonth.builder().month(currentMonth).build());
+        }
+
         List<Tuition> prevTuitions = tuitionRepository.findByMonthActive(prevMonth);
         List<TuitionDTO> savedDtos = new ArrayList<>();
 

@@ -72,6 +72,7 @@ export class StudentsComponent implements OnInit {
   // Month-by-month database
   activeMonth: string = '06/2026';
   tuitionDb: { [key: string]: MonthlyBilling[] } = {};
+  dbMonths: string[] = [];
 
   // Pagination bounds
   studentCurrentPage: number = 1;
@@ -88,6 +89,15 @@ export class StudentsComponent implements OnInit {
   }
 
   initializeMonthlyData() {
+    this.apiService.getTuitionMonths().subscribe({
+      next: (monthList) => {
+        if (monthList && monthList.length > 0) {
+          this.dbMonths = monthList.map(m => m.month);
+        }
+      },
+      error: (err) => console.error('Failed to load tuition months from DB:', err)
+    });
+
     this.apiService.getTuitions().subscribe({
       next: (list) => {
         if (list && list.length > 0) {
@@ -177,9 +187,16 @@ export class StudentsComponent implements OnInit {
   }
 
   getMonths(): string[] {
-    return Object.keys(this.tuitionDb).sort((a, b) => {
-      const [mA, yA] = a.split('/').map(Number);
-      const [mB, yB] = b.split('/').map(Number);
+    const combinedSet = new Set<string>([
+      ...this.dbMonths,
+      ...Object.keys(this.tuitionDb)
+    ]);
+    return Array.from(combinedSet).sort((a, b) => {
+      const partsA = a.split('/');
+      const partsB = b.split('/');
+      if (partsA.length < 2 || partsB.length < 2) return 0;
+      const [mA, yA] = partsA.map(Number);
+      const [mB, yB] = partsB.map(Number);
       return yA !== yB ? yA - yB : mA - mB;
     });
   }
@@ -236,8 +253,24 @@ export class StudentsComponent implements OnInit {
     // Sync clone to backend DB
     if (this.copyFromPreviousMonth && prevMonthKey) {
       this.apiService.cloneTuitionMonth(newMonthKey, prevMonthKey).subscribe({
-        next: () => console.log('Successfully cloned tuition month in database'),
+        next: () => {
+          console.log('Successfully cloned tuition month in database');
+          if (!this.dbMonths.includes(newMonthKey)) {
+            this.dbMonths.push(newMonthKey);
+          }
+        },
         error: (err) => console.error('Failed to sync cloned tuition month in DB:', err)
+      });
+    } else {
+      // Just save the simple empty tuition month to DB
+      this.apiService.addTuitionMonth({ month: newMonthKey }).subscribe({
+        next: () => {
+          console.log('Successfully saved initialized empty month to database');
+          if (!this.dbMonths.includes(newMonthKey)) {
+            this.dbMonths.push(newMonthKey);
+          }
+        },
+        error: (err) => console.error('Failed to save initialized month to DB:', err)
       });
     }
 
@@ -377,16 +410,21 @@ export class StudentsComponent implements OnInit {
   }
 
   generateNewId(): string {
-    const maxNum = this.students.reduce((max, s) => {
+    let nextNum = this.students.reduce((max, s) => {
       const match = s.id.match(/(HV|VS)-\d+-(\d+)/);
       if (match) {
         const num = parseInt(match[2]);
         return num > max ? num : max;
       }
       return max;
-    }, 0);
-    const nextNumString = String(maxNum + 1).padStart(3, '0');
-    return `VS-2026-${nextNumString}`;
+    }, 0) + 1;
+
+    let idCandidate = `VS-2026-${String(nextNum).padStart(3, '0')}`;
+    while (this.students.some(s => s.id === idCandidate)) {
+      nextNum++;
+      idCandidate = `VS-2026-${String(nextNum).padStart(3, '0')}`;
+    }
+    return idCandidate;
   }
 
   openAddForm() {

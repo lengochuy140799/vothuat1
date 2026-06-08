@@ -2,9 +2,11 @@ package com.mabu.system.service;
 
 import com.mabu.system.dto.StudentDTO;
 import com.mabu.system.entity.Student;
+import com.mabu.system.entity.Tuition;
 import com.mabu.system.exception.ResourceNotFoundException;
 import com.mabu.system.mapper.StudentMapper;
 import com.mabu.system.repository.StudentRepository;
+import com.mabu.system.repository.TuitionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,7 +18,16 @@ import java.util.stream.Collectors;
 public class StudentService {
 
     private final StudentRepository studentRepository;
+    private final TuitionRepository tuitionRepository;
     private final StudentMapper studentMapper;
+
+    @Transactional(readOnly = true)
+    public List<StudentDTO> getStudentsByMonth(String month) {
+        return tuitionRepository.findByMonthActive(month).stream()
+                .map(Tuition::getStudent)
+                .map(studentMapper::toDTO)
+                .collect(Collectors.toList());
+    }
 
     @Transactional(readOnly = true)
     public List<StudentDTO> getAllStudents() {

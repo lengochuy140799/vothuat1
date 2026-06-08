@@ -71,6 +71,14 @@ export class ApiService {
   }
 
   // --- Tuitions APIs ---
+  getTuitionMonths(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/tuition-months`);
+  }
+
+  addTuitionMonth(monthObj: { month: string }): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/tuition-months`, monthObj);
+  }
+
   getTuitions(month?: string): Observable<any[]> {
     const url = month ? `${this.baseUrl}/tuitions?month=${encodeURIComponent(month)}` : `${this.baseUrl}/tuitions`;
     return this.http.get<any[]>(url);
