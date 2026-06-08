@@ -134,12 +134,45 @@ public class TuitionService {
 
     @Transactional
     public void deleteTuition(String id) {
-        Tuition tuition = tuitionRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy học phí với mã: " + id));
-        
-        // Use soft delete to match frontend behavior
-        tuition.setIsDeleted(true);
-        tuitionRepository.save(tuition);
+        Optional<Tuition> optTuition = tuitionRepository.findById(id);
+        if (optTuition.isPresent()) {
+            Tuition tuition = optTuition.get();
+            tuition.setIsDeleted(true);
+            tuitionRepository.save(tuition);
+            return;
+        }
+
+        // If not found in DB, try parsing the ID to construct a soft-deleted stub to match frontend behavior
+        if (id != null && id.startsWith("TUI-") && id.length() >= 11) {
+            String cleanMonth = id.substring(4, 10); // e.g. "022026"
+            String month = cleanMonth.substring(0, 2) + "/" + cleanMonth.substring(2); // e.g. "02/2026"
+            String studentIdSuffix = id.substring(11); // e.g. "VS2026-003" / "VS2026-002"
+
+            Optional<Student> studentOpt = studentRepository.findById(studentIdSuffix);
+            if (studentOpt.isEmpty()) {
+                List<Student> students = studentRepository.findAll();
+                studentOpt = students.stream()
+                        .filter(s -> s.getId().replace("-", "").equalsIgnoreCase(studentIdSuffix) 
+                                  || s.getId().equalsIgnoreCase(studentIdSuffix))
+                        .findFirst();
+            }
+
+            if (studentOpt.isPresent()) {
+                if (!tuitionMonthRepository.existsById(month)) {
+                    tuitionMonthRepository.save(TuitionMonth.builder().month(month).build());
+                }
+
+                Tuition tuition = Tuition.builder()
+                        .id(id)
+                        .student(studentOpt.get())
+                        .month(month)
+                        .status("Chưa đóng")
+                        .fee(BigDecimal.valueOf(400000))
+                        .isDeleted(true)
+                        .build();
+                tuitionRepository.save(tuition);
+            }
+        }
     }
 
     @Transactional

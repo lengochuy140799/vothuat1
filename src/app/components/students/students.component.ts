@@ -546,21 +546,32 @@ export class StudentsComponent implements OnInit {
 
   deleteStudent(item: MonthlyBillingItem) {
     if (confirm(`Bạn chắc chắn muốn xóa mềm võ sinh ${item.name} (${item.id}) khỏi Tháng ${this.activeMonth}? Lịch sử đóng phí các tháng khác và hồ sơ gốc vẫn được giữ lại đầy đủ.`)) {
-      const records = this.tuitionDb[this.activeMonth] || [];
-      const tuitionRec = records.find(r => r.studentId === item.id);
-      if (tuitionRec) {
-        tuitionRec.isDeleted = true;
-
-        // Sync soft-delete to backend
-        const tuiId = `TUI-${this.activeMonth.replace("/", "")}-${item.id.replace("-", "")}`;
-        this.apiService.deleteTuition(tuiId).subscribe({
-          next: () => console.log('Successfully soft-deleted tuition in DB'),
-          error: (err) => console.error('Failed to sync soft-delete to DB:', err)
-        });
-
-        this.notify.emit(`Đã xóa mềm võ sinh ${item.name} khỏi Tháng ${this.activeMonth}`);
-        this.studentCurrentPage = 1;
+      if (!this.tuitionDb[this.activeMonth]) {
+        this.tuitionDb[this.activeMonth] = [];
       }
+
+      let tuitionRec = this.tuitionDb[this.activeMonth].find(r => r.studentId === item.id);
+      if (!tuitionRec) {
+        tuitionRec = {
+          studentId: item.id,
+          status: 'Chưa đóng',
+          fee: 400000,
+          isDeleted: true
+        };
+        this.tuitionDb[this.activeMonth].push(tuitionRec);
+      } else {
+        tuitionRec.isDeleted = true;
+      }
+
+      // Sync soft-delete to backend
+      const tuiId = `TUI-${this.activeMonth.replace("/", "")}-${item.id.replace("-", "")}`;
+      this.apiService.deleteTuition(tuiId).subscribe({
+        next: () => console.log('Successfully soft-deleted tuition in DB'),
+        error: (err) => console.error('Failed to sync soft-delete to DB:', err)
+      });
+
+      this.notify.emit(`Đã xóa mềm võ sinh ${item.name} khỏi Tháng ${this.activeMonth}`);
+      this.studentCurrentPage = 1;
     }
   }
 
