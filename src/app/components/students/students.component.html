@@ -109,27 +109,27 @@
   </div>
 
   <!-- Elaborated Advanced Filter Panel with Reset capability -->
-  <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
+  <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm grid grid-cols-1 sm:grid-cols-12 gap-4">
     <!-- Text Search input -->
-    <div class="relative lg:col-span-2">
-      <app-icon name="search" class="absolute left-3.5 top-3 w-4 h-4 text-slate-400"></app-icon>
+    <div class="relative col-span-12 sm:col-span-12 lg:col-span-4 flex items-center">
+      <app-icon name="search" class="absolute left-3.5 top-1/2 -translate-y-1/2" [class]="'w-4 h-4 text-slate-400'"></app-icon>
       <input 
         type="text"
         [(ngModel)]="searchTerm"
         (ngModelChange)="studentCurrentPage = 1"
         placeholder="Tìm kiếm theo mã võ sinh, tên học viên, SĐT..."
         id="search-term-input"
-        class="w-full pl-9.5 pr-4 py-2.5 border border-slate-200 rounded-xl text-xs bg-slate-50/50 hover:bg-white focus:bg-white transition outline-none font-semibold text-slate-800"
+        class="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl text-xs bg-slate-50/50 hover:bg-white focus:bg-white transition outline-none font-semibold text-slate-800"
       />
     </div>
 
     <!-- Month selection dropdown -->
-    <div class="flex items-center gap-1.5">
+    <div class="flex items-center gap-1.5 col-span-12 sm:col-span-6 lg:col-span-3">
       <select 
         [ngModel]="activeMonth"
         (ngModelChange)="selectMonth($event)"
         id="active-month-select"
-        class="flex-1 px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 bg-slate-50/50 hover:bg-white cursor-pointer transition outline-none"
+        class="flex-1 min-w-0 px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 bg-slate-50/50 hover:bg-white cursor-pointer transition outline-none"
       >
         <option *ngFor="let month of getMonths()" [value]="month">📅 Sổ Tháng: {{ month }}</option>
       </select>
@@ -140,12 +140,12 @@
         class="bg-red-50 border border-red-200 hover:bg-red-100 text-red-600 font-extrabold p-2.5 rounded-xl text-xs transition flex items-center justify-center cursor-pointer shadow-sm shrink-0"
         title="Xóa sổ tháng này"
       >
-        <app-icon name="trash" class="w-4 h-4"></app-icon>
+        <app-icon name="trash" [class]="'w-4 h-4'"></app-icon>
       </button>
     </div>
 
     <!-- Color belt filter -->
-    <div>
+    <div class="col-span-12 sm:col-span-6 lg:col-span-2">
       <select 
         [(ngModel)]="beltFilter"
         (ngModelChange)="studentCurrentPage = 1"
@@ -162,7 +162,7 @@
     </div>
 
     <!-- Tuition state filter -->
-    <div>
+    <div class="col-span-12 sm:col-span-6 lg:col-span-2">
       <select 
         [(ngModel)]="tuitionStatusFilter"
         (ngModelChange)="studentCurrentPage = 1"
@@ -176,12 +176,12 @@
     </div>
 
     <!-- Gender filter and Reset Actions block combined -->
-    <div class="flex gap-2">
+    <div class="flex gap-2 col-span-12 sm:col-span-6 lg:col-span-1">
       <select 
         [(ngModel)]="genderFilter"
         (ngModelChange)="studentCurrentPage = 1"
         id="gender-filter-select"
-        class="flex-1 px-3 py-2.5 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 bg-slate-50/50 hover:bg-white cursor-pointer transition outline-none"
+        class="flex-1 min-w-0 px-3 py-2.5 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 bg-slate-50/50 hover:bg-white cursor-pointer transition outline-none"
       >
         <option value="">👫 -- Giới Tính --</option>
         <option value="Nam">Nam</option>
@@ -191,10 +191,10 @@
       <button 
         (click)="resetFilters()"
         id="reset-filters-btn"
-        class="bg-slate-100 hover:bg-slate-200 text-slate-600 font-extrabold px-3 py-2 rounded-xl text-[11px] transition flex items-center justify-center cursor-pointer shadow-sm"
+        class="bg-slate-100 hover:bg-slate-200 text-slate-600 font-extrabold px-3 py-2 rounded-xl text-[11px] transition flex items-center justify-center cursor-pointer shadow-sm shrink-0"
         title="Đặt lại bộ lọc"
       >
-        <app-icon name="refresh" class="w-4 h-4"></app-icon>
+        <app-icon name="refresh" [class]="'w-4 h-4'"></app-icon>
       </button>
     </div>
   </div>
