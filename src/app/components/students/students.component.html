@@ -1,7 +1,7 @@
 <div class="space-y-6 animate-fadeIn font-sans pb-10">
 
   <!-- Statistics Dashboard KPI Cards -->
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
     <!-- Active Month Total Students -->
     <div id="kpi-total" class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center gap-4 hover:shadow-md transition duration-200">
       <div class="p-3.5 rounded-xl bg-indigo-50 text-indigo-650">
@@ -35,6 +35,18 @@
         <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Chưa Đóng Học Phí</p>
         <p class="text-2xl font-black text-rose-600 tracking-tight mt-0.5">{{ kpiUnpaidCount }}</p>
         <p class="text-[10px] text-slate-500 font-semibold mt-1">Còn nợ tháng {{ activeMonth }}</p>
+      </div>
+    </div>
+
+    <!-- Tuition Collected Amount -->
+    <div id="kpi-paid-revenue" class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center gap-4 hover:shadow-md transition duration-200">
+      <div class="p-3.5 rounded-xl bg-emerald-50 text-emerald-650">
+        <app-icon name="credit-card" class="w-6 h-6"></app-icon>
+      </div>
+      <div>
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Học Phí Đã Thu</p>
+        <p class="text-xl font-black text-emerald-600 tracking-tight mt-1">{{ formatCurrency(kpiPaidRevenue) }} VNĐ</p>
+        <p class="text-[10px] text-slate-500 font-semibold mt-1">Đã thu trong tháng {{ activeMonth }}</p>
       </div>
     </div>
 

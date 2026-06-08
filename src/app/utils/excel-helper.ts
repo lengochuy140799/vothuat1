@@ -100,7 +100,7 @@ export class ExcelExporter {
     });
 
     const overviewSheetData = [
-      ['BÁO CÁO TỔNG HỢP HỆ THỐNG KỲ THI NÂNG ĐAI MABU DOJO'],
+      ['BÁO CÁO TỔNG HỢP HỆ THỐNG KỲ THI NÂNG ĐAI - CLB VÕ THUẬT CỔ TRUYỀN NGUYỄN THANH VŨ'],
       [`Thời gian xuất báo cáo: ${new Date().toLocaleString('vi-VN')}`],
       [],
       overviewHeaders,
@@ -148,7 +148,7 @@ export class ExcelExporter {
       XLSX.utils.book_append_sheet(workbook, sheet, safeSheetName || `Ki_Thi_${session.id}`);
     });
 
-    XLSX.writeFile(workbook, 'Bao_Cao_Tong_Hop_Mabu_System.xlsx');
+    XLSX.writeFile(workbook, 'Bao_Cao_Tong_Hop_CLB_Nguyen_Thanh_Vu.xlsx');
   }
 
   public static async parseStudentsExcelFile(file: File): Promise<Partial<Student>[]> {

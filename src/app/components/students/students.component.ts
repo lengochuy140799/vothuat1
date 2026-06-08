@@ -366,6 +366,12 @@ export class StudentsComponent implements OnInit {
     return this.getActiveMonthItems().reduce((sum, item) => sum + item.tuitionFee, 0);
   }
 
+  get kpiPaidRevenue(): number {
+    return this.getActiveMonthItems()
+      .filter(i => i.tuitionStatus === 'Đã đóng')
+      .reduce((sum, item) => sum + item.tuitionFee, 0);
+  }
+
   resetFilters() {
     this.searchTerm = '';
     this.beltFilter = '';
@@ -706,7 +712,7 @@ export class StudentsComponent implements OnInit {
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, `Thu Phí Tháng ${this.activeMonth.replace('/', '-')}`);
 
-    XLSX.writeFile(workbook, `Hoc_Phi_MABU_Thang_${this.activeMonth.replace('/', '_')}.xlsx`);
+    XLSX.writeFile(workbook, `Hoc_Phi_Nguyen_Thanh_Vu_Thang_${this.activeMonth.replace('/', '_')}.xlsx`);
     this.notify.emit(`Đã xuất báo cáo học phí Tháng ${this.activeMonth} Excel (.xlsx) thành công!`);
   }
 
@@ -745,7 +751,7 @@ export class StudentsComponent implements OnInit {
         XLSX.utils.book_append_sheet(workbook, ws, `Tháng ${monthKey.replace('/', '-')}`);
       });
 
-      XLSX.writeFile(workbook, 'So_Theo_Doi_Hoc_Phi_MABU_Tron_Goi.xlsx');
+      XLSX.writeFile(workbook, 'So_Theo_Doi_Hoc_Phi_Nguyen_Thanh_Vu_Tron_Goi.xlsx');
       this.notify.emit('Đã xuất sổ sách theo dõi học phí trọn gói (.XLSX) thành công!');
     } catch (err) {
       console.error(err);

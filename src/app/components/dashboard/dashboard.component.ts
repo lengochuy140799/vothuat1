@@ -78,6 +78,6 @@ export class DashboardComponent implements OnChanges {
       return;
     }
     ExcelExporter.exportComprehensiveReport(this.sessions, this.registrations, this.students);
-    this.notify.emit('Đã xuất báo cáo toàn diện Mabu Dojo thành công!');
+    this.notify.emit('Đã xuất báo cáo toàn diện CLB Nguyễn Thanh Vũ thành công!');
   }
 }
