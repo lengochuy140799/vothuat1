@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -117,6 +118,11 @@ public class StudentService {
 
     @Transactional
     public List<StudentDTO> bulkImportStudents(List<StudentDTO> dtos) {
+        return bulkImportStudents(dtos, null);
+    }
+
+    @Transactional
+    public List<StudentDTO> bulkImportStudents(List<StudentDTO> dtos, String month) {
         List<Student> entities = dtos.stream()
                 .map(dto -> {
                     // Overwrite if exists, otherwise create new
@@ -125,6 +131,46 @@ public class StudentService {
                 })
                 .collect(Collectors.toList());
         List<Student> saved = studentRepository.saveAll(entities);
+
+        if (month != null && !month.trim().isEmpty()) {
+            for (Student s : saved) {
+                // Ensure registration is present
+                if (!registrationRepository.existsByStudentIdAndMonth(s.getId(), month)) {
+                    String regId = "REG-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+                    Registration reg = Registration.builder()
+                            .id(regId)
+                            .student(s)
+                            .month(month)
+                            .currentBelt(s.getCurrentBelt())
+                            .targetBelt(s.getCurrentBelt())
+                            .examFee(BigDecimal.ZERO)
+                            .paymentStatus("UNPAID")
+                            .notes("Đăng ký đóng học phí tháng " + month)
+                            .build();
+                    registrationRepository.save(reg);
+                }
+
+                // Ensure tuition is present
+                Optional<Tuition> optTuition = tuitionRepository.findByStudentIdAndMonth(s.getId(), month);
+                if (optTuition.isPresent()) {
+                    Tuition tui = optTuition.get();
+                    tui.setIsDeleted(false);
+                    tuitionRepository.save(tui);
+                } else {
+                    String tuiId = "TUI-" + month.replace("/", "") + "-" + s.getId().replace("-", "");
+                    Tuition tui = Tuition.builder()
+                            .id(tuiId)
+                            .student(s)
+                            .month(month)
+                            .status("Chưa đóng")
+                            .fee(new BigDecimal("400000"))
+                            .isDeleted(false)
+                            .build();
+                    tuitionRepository.save(tui);
+                }
+            }
+        }
+
         return saved.stream().map(studentMapper::toDTO).collect(Collectors.toList());
     }
 }

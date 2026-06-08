@@ -29,8 +29,9 @@ export class ApiService {
     return this.http.delete<void>(`${this.baseUrl}/students/${id}`);
   }
 
-  bulkImportStudents(students: Student[]): Observable<Student[]> {
-    return this.http.post<Student[]>(`${this.baseUrl}/students/import`, students);
+  bulkImportStudents(students: Student[], month?: string): Observable<Student[]> {
+    const url = month ? `${this.baseUrl}/students/import?month=${encodeURIComponent(month)}` : `${this.baseUrl}/students/import`;
+    return this.http.post<Student[]>(url, students);
   }
 
   // --- Exam Sessions APIs ---

@@ -57,7 +57,9 @@ public class StudentController {
     }
 
     @PostMapping("/import")
-    public ResponseEntity<List<StudentDTO>> bulkImport(@RequestBody List<StudentDTO> dtos) {
-        return ResponseEntity.ok(studentService.bulkImportStudents(dtos));
+    public ResponseEntity<List<StudentDTO>> bulkImport(
+            @RequestBody List<StudentDTO> dtos,
+            @RequestParam(required = false) String month) {
+        return ResponseEntity.ok(studentService.bulkImportStudents(dtos, month));
     }
 }

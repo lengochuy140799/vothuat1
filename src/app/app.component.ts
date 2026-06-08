@@ -105,8 +105,8 @@ export class AppComponent implements OnInit {
     this.store.dispatch(AppActions.deleteStudent({ id }));
   }
 
-  onBulkImportStudents(students: Student[]) {
-    this.store.dispatch(AppActions.bulkImportStudents({ students }));
+  onBulkImportStudents(event: { students: Student[]; month: string }) {
+    this.store.dispatch(AppActions.bulkImportStudents({ students: event.students, month: event.month }));
   }
 
   // Exam session actions mapping

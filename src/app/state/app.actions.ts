@@ -12,7 +12,7 @@ export const loadInitialStateSuccess = createAction(
 export const addStudent = createAction('[Student] Add Student', props<{ student: Student; month?: string }>());
 export const updateStudent = createAction('[Student] Update Student', props<{ student: Student }>());
 export const deleteStudent = createAction('[Student] Delete Student', props<{ id: string }>());
-export const bulkImportStudents = createAction('[Student] Bulk Import Students', props<{ students: Student[] }>());
+export const bulkImportStudents = createAction('[Student] Bulk Import Students', props<{ students: Student[]; month?: string }>());
 
 // Exam Sessions Actions
 export const addSession = createAction('[Session] Add Session', props<{ session: ExamSession }>());

@@ -42,7 +42,7 @@ export class StudentsComponent implements OnInit {
   @Output() addStudent = new EventEmitter<{ student: Student; month?: string }>();
   @Output() updateStudent = new EventEmitter<Student>();
   @Output() deleteStudentId = new EventEmitter<string>();
-  @Output() bulkImport = new EventEmitter<Student[]>();
+  @Output() bulkImport = new EventEmitter<{ students: Student[]; month: string }>();
   @Output() notify = new EventEmitter<any>();
   @Output() reloadState = new EventEmitter<void>();
 
@@ -667,7 +667,7 @@ export class StudentsComponent implements OnInit {
       };
     });
 
-    this.bulkImport.emit(newStudents);
+    this.bulkImport.emit({ students: newStudents, month: this.activeMonth });
     this.notify.emit(`Nạp hồ sơ thành công! Đã thêm ${newStudents.length} võ sinh mới.`);
     this.studentCurrentPage = 1;
     this.closeImportModal();

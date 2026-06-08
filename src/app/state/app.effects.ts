@@ -102,7 +102,7 @@ export class AppEffects {
               });
               break;
             case AppActions.bulkImportStudents.type:
-              this.apiService.bulkImportStudents((action as any).students).subscribe({
+              this.apiService.bulkImportStudents((action as any).students, (action as any).month).subscribe({
                 next: () => console.log('Successfully bulk-imported students to database'),
                 error: (err) => console.error('Failed to sync bulk import:', err)
               });
@@ -205,6 +205,7 @@ export class AppEffects {
         AppActions.addStudent,
         AppActions.updateStudent,
         AppActions.deleteStudent,
+        AppActions.bulkImportStudents,
         AppActions.addRegistration,
         AppActions.deleteRegistration,
         AppActions.togglePayment
