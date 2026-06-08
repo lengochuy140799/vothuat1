@@ -63,12 +63,21 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit() {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const savedTab = localStorage.getItem('mabu_active_tab');
+      if (savedTab) {
+        this.activeTab = savedTab;
+      }
+    }
     // Command initial load from API or localStorage
     this.store.dispatch(AppActions.loadInitialState());
   }
 
   onTabChange(tab: string) {
     this.activeTab = tab;
+    if (typeof window !== 'undefined' && window.localStorage) {
+      localStorage.setItem('mabu_active_tab', tab);
+    }
   }
 
   onNotificationTrigger(event: any) {
