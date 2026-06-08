@@ -174,7 +174,23 @@ public class TuitionService {
         List<TuitionDTO> savedDtos = new ArrayList<>();
 
         for (Tuition prev : prevTuitions) {
-            // Check if already exists in target month
+            // 1. Create registration if missing
+            if (!registrationRepository.existsByStudentIdAndMonth(prev.getStudent().getId(), currentMonth)) {
+                String regId = "REG-" + java.util.UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+                com.mabu.system.entity.Registration reg = com.mabu.system.entity.Registration.builder()
+                        .id(regId)
+                        .student(prev.getStudent())
+                        .month(currentMonth)
+                        .currentBelt(prev.getStudent().getCurrentBelt())
+                        .targetBelt(prev.getStudent().getCurrentBelt())
+                        .examFee(BigDecimal.ZERO)
+                        .paymentStatus("UNPAID")
+                        .notes("Đăng ký đóng học phí tháng " + currentMonth)
+                        .build();
+                registrationRepository.save(reg);
+            }
+
+            // 2. Create tuition if missing
             Optional<Tuition> existing = tuitionRepository.findByStudentIdAndMonth(prev.getStudent().getId(), currentMonth);
             if (existing.isEmpty()) {
                 Tuition fresh = Tuition.builder()
