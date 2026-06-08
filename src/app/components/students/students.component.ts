@@ -528,10 +528,7 @@ export class StudentsComponent implements OnInit {
         return;
       }
       
-      // General profile creation
-      this.addStudent.emit({ student: studentData, month: this.activeMonth });
-      
-      // Monthly state mapping creation
+      // Monthly state mapping creation locally (instant UI feedback)
       if (!this.tuitionDb[this.activeMonth]) {
         this.tuitionDb[this.activeMonth] = [];
       }
@@ -542,19 +539,31 @@ export class StudentsComponent implements OnInit {
       });
       this.saveTuitionDb();
 
-      // Sync creation to backend DB
-      const tuitionPayload = {
-        studentId: studentData.id,
-        month: this.activeMonth,
-        status: this.formTuitionStatus,
-        fee: this.formFee
-      };
-      this.apiService.addTuition(tuitionPayload).subscribe({
-        next: (savedTuition) => console.log('Successfully saved tuition to database:', savedTuition),
-        error: (err) => console.error('Failed to sync tuition to database:', err)
+      // Sync creation to backend DB (sequential requests to avoid race conditions/duplicate primary keys)
+      this.apiService.addStudent(studentData, this.activeMonth).subscribe({
+        next: (savedStudent) => {
+          console.log('Successfully saved student profile:', savedStudent);
+          
+          const tuitionPayload = {
+            studentId: studentData.id,
+            month: this.activeMonth,
+            status: this.formTuitionStatus,
+            fee: this.formFee
+          };
+          
+          this.apiService.addTuition(tuitionPayload).subscribe({
+            next: (savedTuition) => {
+              console.log('Successfully saved tuition to database:', savedTuition);
+              
+              // Now update NgRx state
+              this.addStudent.emit({ student: studentData, month: this.activeMonth });
+              this.notify.emit(`Đã ghi danh và cập nhật bách khoa học phí võ sinh ${this.formName}`);
+            },
+            error: (err) => console.error('Failed to sync tuition to database:', err)
+          });
+        },
+        error: (err) => console.error('Failed to sync student:', err)
       });
-
-      this.notify.emit(`Đã ghi danh và cập nhật bách khoa học phí võ sinh ${this.formName}`);
     }
     this.closeFormModal();
   }
