@@ -110,6 +110,8 @@ public class StudentService {
         if (!studentRepository.existsById(id)) {
             throw new ResourceNotFoundException("Không tìm thấy học viên với mã: " + id);
         }
+        tuitionRepository.deleteByStudentId(id);
+        registrationRepository.deleteByStudentId(id);
         studentRepository.deleteById(id);
     }
 

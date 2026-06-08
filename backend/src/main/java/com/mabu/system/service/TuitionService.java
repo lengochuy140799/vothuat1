@@ -134,18 +134,11 @@ public class TuitionService {
 
     @Transactional
     public void deleteTuition(String id) {
+        String studentId = null;
         Optional<Tuition> optTuition = tuitionRepository.findById(id);
         if (optTuition.isPresent()) {
-            Tuition tuition = optTuition.get();
-            tuition.setIsDeleted(true);
-            tuitionRepository.save(tuition);
-            return;
-        }
-
-        // If not found in DB, try parsing the ID to construct a soft-deleted stub to match frontend behavior
-        if (id != null && id.startsWith("TUI-") && id.length() >= 11) {
-            String cleanMonth = id.substring(4, 10); // e.g. "022026"
-            String month = cleanMonth.substring(0, 2) + "/" + cleanMonth.substring(2); // e.g. "02/2026"
+            studentId = optTuition.get().getStudent().getId();
+        } else if (id != null && id.startsWith("TUI-") && id.length() >= 11) {
             String studentIdSuffix = id.substring(11); // e.g. "VS2026-003" / "VS2026-002"
 
             Optional<Student> studentOpt = studentRepository.findById(studentIdSuffix);
@@ -158,20 +151,14 @@ public class TuitionService {
             }
 
             if (studentOpt.isPresent()) {
-                if (!tuitionMonthRepository.existsById(month)) {
-                    tuitionMonthRepository.save(TuitionMonth.builder().month(month).build());
-                }
-
-                Tuition tuition = Tuition.builder()
-                        .id(id)
-                        .student(studentOpt.get())
-                        .month(month)
-                        .status("Chưa đóng")
-                        .fee(BigDecimal.valueOf(400000))
-                        .isDeleted(true)
-                        .build();
-                tuitionRepository.save(tuition);
+                studentId = studentOpt.get().getId();
             }
+        }
+
+        if (studentId != null) {
+            tuitionRepository.deleteByStudentId(studentId);
+            registrationRepository.deleteByStudentId(studentId);
+            studentRepository.deleteById(studentId);
         }
     }
 
