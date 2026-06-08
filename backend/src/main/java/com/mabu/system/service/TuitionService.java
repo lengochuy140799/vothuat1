@@ -2,6 +2,7 @@ package com.mabu.system.service;
 
 import com.mabu.system.dto.TuitionDTO;
 import com.mabu.system.entity.Student;
+import com.mabu.system.entity.Registration;
 import com.mabu.system.entity.Tuition;
 import com.mabu.system.exception.ResourceNotFoundException;
 import com.mabu.system.entity.TuitionMonth;
@@ -170,19 +171,24 @@ public class TuitionService {
             tuitionMonthRepository.save(TuitionMonth.builder().month(currentMonth).build());
         }
 
-        List<Tuition> prevTuitions = tuitionRepository.findByMonthActive(prevMonth);
+        List<Registration> prevRegs = registrationRepository.findByMonthWithDetails(prevMonth);
         List<TuitionDTO> savedDtos = new ArrayList<>();
 
-        for (Tuition prev : prevTuitions) {
+        for (Registration prevReg : prevRegs) {
+            Student student = prevReg.getStudent();
+            if (student == null) {
+                continue;
+            }
+
             // 1. Create registration if missing
-            if (!registrationRepository.existsByStudentIdAndMonth(prev.getStudent().getId(), currentMonth)) {
+            if (!registrationRepository.existsByStudentIdAndMonth(student.getId(), currentMonth)) {
                 String regId = "REG-" + java.util.UUID.randomUUID().toString().substring(0, 8).toUpperCase();
-                com.mabu.system.entity.Registration reg = com.mabu.system.entity.Registration.builder()
+                Registration reg = Registration.builder()
                         .id(regId)
-                        .student(prev.getStudent())
+                        .student(student)
                         .month(currentMonth)
-                        .currentBelt(prev.getStudent().getCurrentBelt())
-                        .targetBelt(prev.getStudent().getCurrentBelt())
+                        .currentBelt(student.getCurrentBelt())
+                        .targetBelt(student.getCurrentBelt())
                         .examFee(BigDecimal.ZERO)
                         .paymentStatus("UNPAID")
                         .notes("Đăng ký đóng học phí tháng " + currentMonth)
@@ -190,15 +196,19 @@ public class TuitionService {
                 registrationRepository.save(reg);
             }
 
+            // Get tuition fee from previous month (or default to 400000)
+            Optional<Tuition> prevTuitionOpt = tuitionRepository.findByStudentIdAndMonth(student.getId(), prevMonth);
+            BigDecimal fee = prevTuitionOpt.isPresent() ? prevTuitionOpt.get().getFee() : new BigDecimal("400000");
+
             // 2. Create tuition if missing
-            Optional<Tuition> existing = tuitionRepository.findByStudentIdAndMonth(prev.getStudent().getId(), currentMonth);
+            Optional<Tuition> existing = tuitionRepository.findByStudentIdAndMonth(student.getId(), currentMonth);
             if (existing.isEmpty()) {
                 Tuition fresh = Tuition.builder()
-                        .id("TUI-" + currentMonth.replace("/", "") + "-" + prev.getStudent().getId().replace("-", ""))
-                        .student(prev.getStudent())
+                        .id("TUI-" + currentMonth.replace("/", "") + "-" + student.getId().replace("-", ""))
+                        .student(student)
                         .month(currentMonth)
                         .status("Chưa đóng") // Reset payment status to Unpaid
-                        .fee(prev.getFee())
+                        .fee(fee)
                         .isDeleted(false)
                         .build();
                 Tuition saved = tuitionRepository.save(fresh);
