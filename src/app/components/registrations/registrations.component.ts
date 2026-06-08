@@ -80,7 +80,15 @@ export class RegistrationsComponent implements OnChanges {
   }
 
   getUnregisteredStudents(): Student[] {
-    return this.students.filter(student => {
+    const uniqueMap = new Map<string, Student>();
+    this.students.forEach(s => {
+      if (s && s.id) {
+        uniqueMap.set(s.id, s);
+      }
+    });
+    const uniqueStudents = Array.from(uniqueMap.values());
+
+    return uniqueStudents.filter(student => {
       const isRegistered = this.activeSessionRegs.some(r => r.studentId === student.id);
       const matchesSearch = 
         student.name.toLowerCase().includes(this.studentSearchTerm.toLowerCase()) || 

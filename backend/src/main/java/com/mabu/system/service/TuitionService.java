@@ -41,7 +41,18 @@ public class TuitionService {
     @Transactional
     public TuitionDTO saveTuition(TuitionDTO dto) {
         Student student = studentRepository.findById(dto.getStudentId())
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy học viên với mã: " + dto.getStudentId()));
+                .orElseGet(() -> {
+                    Student stub = Student.builder()
+                            .id(dto.getStudentId())
+                            .name("Học viên mới")
+                            .gender("Nam")
+                            .birth("2012-01-01")
+                            .phone("0901234567")
+                            .currentBelt("Trắng")
+                            .registrationDate("2026-06-05")
+                            .build();
+                    return studentRepository.save(stub);
+                });
 
         Optional<Tuition> existing = tuitionRepository.findByStudentIdAndMonth(dto.getStudentId(), dto.getMonth());
         Tuition tuition;

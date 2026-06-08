@@ -34,10 +34,17 @@ public class StudentService {
 
     @Transactional
     public StudentDTO saveStudent(StudentDTO dto) {
-        if (studentRepository.existsById(dto.getId())) {
-            throw new IllegalArgumentException("Mã học viên '" + dto.getId() + "' đã tồn tại!");
-        }
-        Student student = studentMapper.toEntity(dto);
+        Student student = studentRepository.findById(dto.getId())
+                .orElseGet(() -> studentMapper.toEntity(dto));
+        
+        student.setName(dto.getName());
+        student.setGender(dto.getGender());
+        student.setBirth(dto.getBirth());
+        student.setPhone(dto.getPhone());
+        student.setCurrentBelt(dto.getCurrentBelt());
+        student.setRegistrationDate(dto.getRegistrationDate());
+        student.setAddress(dto.getAddress());
+        
         Student saved = studentRepository.save(student);
         return studentMapper.toDTO(saved);
     }

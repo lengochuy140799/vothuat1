@@ -141,32 +141,32 @@ export class StudentsComponent implements OnInit {
   loadDefaultTuitionDb() {
     this.tuitionDb = {
       "04/2026": [
-        { studentId: 'HV-2026-001', status: 'Đã đóng', fee: 400000 },
-        { studentId: 'HV-2026-002', status: 'Đã đóng', fee: 400000 },
-        { studentId: 'HV-2026-003', status: 'Chưa đóng', fee: 400000 },
-        { studentId: 'HV-2026-004', status: 'Đã đóng', fee: 400000 },
-        { studentId: 'HV-2026-005', status: 'Chưa đóng', fee: 400000 }
+        { studentId: 'VS-2026-001', status: 'Đã đóng', fee: 400000 },
+        { studentId: 'VS-2026-002', status: 'Đã đóng', fee: 400000 },
+        { studentId: 'VS-2026-003', status: 'Chưa đóng', fee: 400000 },
+        { studentId: 'VS-2026-004', status: 'Đã đóng', fee: 400000 },
+        { studentId: 'VS-2026-005', status: 'Chưa đóng', fee: 400000 }
       ],
       "05/2026": [
-        { studentId: 'HV-2026-001', status: 'Đã đóng', fee: 400000 },
-        { studentId: 'HV-2026-002', status: 'Đã đóng', fee: 400000 },
-        { studentId: 'HV-2026-003', status: 'Đã đóng', fee: 400000 },
-        { studentId: 'HV-2026-004', status: 'Đã đóng', fee: 400000 },
-        { studentId: 'HV-2026-005', status: 'Chưa đóng', fee: 400000 },
-        { studentId: 'HV-2026-006', status: 'Đã đóng', fee: 400000 },
-        { studentId: 'HV-2026-007', status: 'Chưa đóng', fee: 400000 }
+        { studentId: 'VS-2026-001', status: 'Đã đóng', fee: 400000 },
+        { studentId: 'VS-2026-002', status: 'Đã đóng', fee: 400000 },
+        { studentId: 'VS-2026-003', status: 'Đã đóng', fee: 400000 },
+        { studentId: 'VS-2026-004', status: 'Đã đóng', fee: 400000 },
+        { studentId: 'VS-2026-005', status: 'Chưa đóng', fee: 400000 },
+        { studentId: 'VS-2026-006', status: 'Đã đóng', fee: 400000 },
+        { studentId: 'VS-2026-007', status: 'Chưa đóng', fee: 400000 }
       ],
       "06/2026": [
-        { studentId: 'HV-2026-001', status: 'Chưa đóng', fee: 400000 },
-        { studentId: 'HV-2026-002', status: 'Đã đóng', fee: 400000 },
-        { studentId: 'HV-2026-003', status: 'Đã đóng', fee: 400000 },
-        { studentId: 'HV-2026-004', status: 'Chưa đóng', fee: 400000 },
-        { studentId: 'HV-2026-005', status: 'Đã đóng', fee: 400000 },
-        { studentId: 'HV-2026-006', status: 'Chưa đóng', fee: 400000 },
-        { studentId: 'HV-2026-007', status: 'Đã đóng', fee: 400000 },
-        { studentId: 'HV-2026-008', status: 'Đã đóng', fee: 400000 },
-        { studentId: 'HV-2026-009', status: 'Chưa đóng', fee: 400000 },
-        { studentId: 'HV-2026-010', status: 'Đã đóng', fee: 500000 }
+        { studentId: 'VS-2026-001', status: 'Chưa đóng', fee: 400000 },
+        { studentId: 'VS-2026-002', status: 'Đã đóng', fee: 400000 },
+        { studentId: 'VS-2026-003', status: 'Đã đóng', fee: 400000 },
+        { studentId: 'VS-2026-004', status: 'Chưa đóng', fee: 400000 },
+        { studentId: 'VS-2026-005', status: 'Đã đóng', fee: 400000 },
+        { studentId: 'VS-2026-006', status: 'Chưa đóng', fee: 400000 },
+        { studentId: 'VS-2026-007', status: 'Đã đóng', fee: 400000 },
+        { studentId: 'VS-2026-008', status: 'Đã đóng', fee: 400000 },
+        { studentId: 'VS-2026-009', status: 'Chưa đóng', fee: 400000 },
+        { studentId: 'VS-2026-010', status: 'Đã đóng', fee: 500000 }
       ]
     };
     this.saveTuitionDb();
@@ -386,7 +386,7 @@ export class StudentsComponent implements OnInit {
       return max;
     }, 0);
     const nextNumString = String(maxNum + 1).padStart(3, '0');
-    return `HV-2026-${nextNumString}`;
+    return `VS-2026-${nextNumString}`;
   }
 
   openAddForm() {

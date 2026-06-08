@@ -52,18 +52,18 @@ CREATE INDEX idx_registrations_student ON registrations(student_id);
 INSERT INTO app_users (username, password, email, role) 
 VALUES ('admin', '$2a$10$TqjY2GfeA5a.S6Z9q5J0S.OsnLgD798S7u77lZ51QW9xW5x9X86mG', 'admin@mabudojo.com', 'ADMIN');
 
--- Seed students (HV-2026-001 through HV-2026-010)
+-- Seed students (VS-2026-001 through VS-2026-010)
 INSERT INTO students (id, name, gender, birth, phone, current_belt, registration_date, created_at) VALUES
-('HV-2026-001', 'Nguyễn Minh Khoa', 'Nam', '2015-04-12', '0912345678', 'Trắng', '2026-01-10', NOW() - INTERVAL '120 days'),
-('HV-2026-002', 'Lê Quỳnh Anh', 'Nữ', '2016-08-22', '0987654321', 'Vàng', '2025-06-15', NOW() - INTERVAL '150 days'),
-('HV-2026-003', 'Trần Tiến Đạt', 'Nam', '2014-11-05', '0905123456', 'Xanh', '2025-02-20', NOW() - INTERVAL '200 days'),
-('HV-2026-004', 'Phạm Minh Thư', 'Nữ', '2015-12-30', '0934112233', 'Vàng', '2025-10-05', NOW() - INTERVAL '100 days'),
-('HV-2026-005', 'Vũ Hải Đăng', 'Nam', '2013-03-18', '0977889900', 'Đỏ', '2024-05-12', NOW() - INTERVAL '300 days'),
-('HV-2026-006', 'Phan Thanh Thảo', 'Nữ', '2016-01-25', '0944556677', 'Trắng', '2026-02-01', NOW() - INTERVAL '80 days'),
-('HV-2026-007', 'Hoàng Gia Bảo', 'Nam', '2014-07-14', '0911223344', 'Xanh', '2025-08-18', NOW() - INTERVAL '180 days'),
-('HV-2026-008', 'Đỗ Thùy Linh', 'Nữ', '2015-09-09', '0966554433', 'Đỏ', '2024-11-30', NOW() - INTERVAL '250 days'),
-('HV-2026-009', 'Bùi Văn Hùng', 'Nam', '2012-10-20', '0922883377', 'Trắng', '2026-03-05', NOW() - INTERVAL '60 days'),
-('HV-2026-010', 'Trịnh Quốc Nam', 'Nam', '2013-05-30', '0988776655', 'Đen', '2023-09-10', NOW() - INTERVAL '400 days');
+('VS-2026-001', 'Nguyễn Văn Hải', 'Nam', '2010-04-12', '0912345678', 'Trắng', '2026-01-10', NOW() - INTERVAL '120 days'),
+('VS-2026-002', 'Lê Minh Tuấn', 'Nam', '2012-08-25', '0987654321', 'Vàng', '2026-01-15', NOW() - INTERVAL '150 days'),
+('VS-2026-003', 'Trần Thị Hồng', 'Nữ', '2011-02-05', '0905556667', 'Xanh', '2026-01-18', NOW() - INTERVAL '200 days'),
+('VS-2026-004', 'Phạm Quốc Bảo', 'Nam', '2009-11-30', '0934112233', 'Đỏ', '2026-01-20', NOW() - INTERVAL '100 days'),
+('VS-2026-005', 'Hoàng Gia Huy', 'Nam', '2013-05-14', '0977224466', 'Trắng', '2026-01-22', NOW() - INTERVAL '300 days'),
+('VS-2026-006', 'Vũ Phương Linh', 'Nữ', '2011-09-08', '0911889900', 'Trắng', '2026-01-25', NOW() - INTERVAL '80 days'),
+('VS-2026-007', 'Đặng Tiến Dũng', 'Nam', '2008-01-15', '0944005511', 'Vàng', '2026-01-28', NOW() - INTERVAL '180 days'),
+('VS-2026-008', 'Bùi Minh Tâm', 'Nam', '2014-06-19', '0966334455', 'Xanh', '2026-02-02', NOW() - INTERVAL '250 days'),
+('VS-2026-009', 'Phan Thanh Trúc', 'Nữ', '2012-10-10', '0988112244', 'Đỏ', '2026-02-05', NOW() - INTERVAL '60 days'),
+('VS-2026-010', 'Nguyễn Hữu Đạt', 'Nam', '2010-12-01', '0909556644', 'Đen', '2026-02-12', NOW() - INTERVAL '400 days');
 
 -- Seed exam sessions
 INSERT INTO exam_sessions (id, name, date, location, status, created_at) VALUES
@@ -73,8 +73,8 @@ INSERT INTO exam_sessions (id, name, date, location, status, created_at) VALUES
 
 -- Seed registrations
 INSERT INTO registrations (id, student_id, exam_session_id, current_belt, target_belt, exam_fee, payment_status, payment_date, notes, created_at) VALUES
-('REG-001', 'HV-2026-001', 'EX-2026-Q2', 'Trắng', 'Vàng', 250000.00, 'PAID', '2026-06-01', 'Đã chuyển khoản Vietcombank', NOW() - INTERVAL '4 days'),
-('REG-002', 'HV-2026-002', 'EX-2026-Q2', 'Vàng', 'Xanh', 350000.00, 'UNPAID', NULL, 'Hứa đóng ngày sinh hoạt sau', NOW() - INTERVAL '3 days'),
-('REG-003', 'HV-2026-004', 'EX-2026-Q2', 'Vàng', 'Xanh', 350000.00, 'PAID', '2026-06-03', 'Đóng tiền mặt tại võ đường', NOW() - INTERVAL '2 days'),
-('REG-004', 'HV-2026-003', 'EX-2026-Q1', 'Xanh', 'Đỏ', 450000.00, 'PAID', '2026-03-10', 'Đã thi đỗ đai Đỏ', NOW() - INTERVAL '80 days'),
-('REG-005', 'HV-2026-005', 'EX-2026-Q1', 'Đỏ', 'Đen', 600000.00, 'PAID', '2026-03-12', 'Đóng đợt thi trước', NOW() - INTERVAL '78 days');
+('REG-001', 'VS-2026-001', 'EX-2026-Q2', 'Trắng', 'Vàng', 250000.00, 'PAID', '2026-06-01', 'Đã chuyển khoản Vietcombank', NOW() - INTERVAL '4 days'),
+('REG-002', 'VS-2026-002', 'EX-2026-Q2', 'Vàng', 'Xanh', 350000.00, 'UNPAID', NULL, 'Hứa đóng ngày sinh hoạt sau', NOW() - INTERVAL '3 days'),
+('REG-003', 'VS-2026-004', 'EX-2026-Q2', 'Vàng', 'Xanh', 350000.00, 'PAID', '2026-06-03', 'Đóng tiền mặt tại võ đường', NOW() - INTERVAL '2 days'),
+('REG-004', 'VS-2026-003', 'EX-2026-Q1', 'Xanh', 'Đỏ', 450000.00, 'PAID', '2026-03-10', 'Đã thi đỗ đai Đỏ', NOW() - INTERVAL '80 days'),
+('REG-005', 'VS-2026-005', 'EX-2026-Q1', 'Đỏ', 'Đen', 600000.00, 'PAID', '2026-03-12', 'Đóng đợt thi trước', NOW() - INTERVAL '78 days');
