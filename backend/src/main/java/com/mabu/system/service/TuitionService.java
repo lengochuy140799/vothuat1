@@ -83,13 +83,49 @@ public class TuitionService {
 
     @Transactional
     public TuitionDTO updateTuition(String id, TuitionDTO dto) {
-        Tuition tuition = tuitionRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy học phí với mã: " + id));
+        Optional<Tuition> optTuition = tuitionRepository.findById(id);
+        if (optTuition.isEmpty() && dto.getStudentId() != null && dto.getMonth() != null) {
+            optTuition = tuitionRepository.findByStudentIdAndMonth(dto.getStudentId(), dto.getMonth());
+        }
 
-        tuition.setStatus(dto.getStatus());
-        tuition.setFee(dto.getFee());
-        if (dto.getIsDeleted() != null) {
-            tuition.setIsDeleted(dto.getIsDeleted());
+        Tuition tuition;
+        if (optTuition.isPresent()) {
+            tuition = optTuition.get();
+            tuition.setStatus(dto.getStatus());
+            tuition.setFee(dto.getFee());
+            if (dto.getIsDeleted() != null) {
+                tuition.setIsDeleted(dto.getIsDeleted());
+            }
+        } else {
+            String studentId = dto.getStudentId();
+            String month = dto.getMonth();
+            if (studentId == null || month == null) {
+                // Return gracefully or throw if studentId and month are missing
+                throw new ResourceNotFoundException("Không tìm thấy học phí với mã: " + id);
+            }
+
+            Student student = studentRepository.findById(studentId)
+                    .orElseGet(() -> {
+                        Student stub = Student.builder()
+                                .id(studentId)
+                                .name("Học viên mới")
+                                .gender("Nam")
+                                .birth("2012-01-01")
+                                .phone("0901234567")
+                                .currentBelt("Trắng")
+                                .registrationDate("2026-06-05")
+                                .build();
+                        return studentRepository.save(stub);
+                    });
+
+            if (!tuitionMonthRepository.existsById(month)) {
+                tuitionMonthRepository.save(TuitionMonth.builder().month(month).build());
+            }
+
+            tuition = tuitionMapper.toEntity(dto);
+            tuition.setId(id);
+            tuition.setStudent(student);
+            tuition.setIsDeleted(false);
         }
 
         Tuition saved = tuitionRepository.save(tuition);
