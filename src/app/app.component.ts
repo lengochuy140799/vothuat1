@@ -80,6 +80,10 @@ export class AppComponent implements OnInit {
     this.store.dispatch(AppActions.setActiveSession({ id }));
   }
 
+  onReloadState() {
+    this.store.dispatch(AppActions.loadInitialState());
+  }
+
   // Students actions mappings
   onAddStudent(event: any) {
     if (event && event.student) {

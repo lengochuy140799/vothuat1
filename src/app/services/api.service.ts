@@ -80,6 +80,10 @@ export class ApiService {
     return this.http.post<any>(`${this.baseUrl}/tuition-months`, monthObj);
   }
 
+  deleteTuitionMonth(month: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/tuition-months/${month}`);
+  }
+
   getTuitions(month?: string): Observable<any[]> {
     const url = month ? `${this.baseUrl}/tuitions?month=${encodeURIComponent(month)}` : `${this.baseUrl}/tuitions`;
     return this.http.get<any[]>(url);

@@ -2,8 +2,10 @@ package com.mabu.system.repository;
 
 import com.mabu.system.entity.Registration;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 public interface RegistrationRepository extends JpaRepository<Registration, String> {
@@ -20,4 +22,9 @@ public interface RegistrationRepository extends JpaRepository<Registration, Stri
     boolean existsByStudentIdAndExamSessionId(String studentId, String examSessionId);
 
     boolean existsByStudentIdAndMonth(String studentId, String month);
+
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM Registration r WHERE r.month = :month")
+    void deleteByMonth(@Param("month") String month);
 }

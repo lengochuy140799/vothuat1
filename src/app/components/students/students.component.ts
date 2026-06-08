@@ -44,6 +44,7 @@ export class StudentsComponent implements OnInit {
   @Output() deleteStudentId = new EventEmitter<string>();
   @Output() bulkImport = new EventEmitter<Student[]>();
   @Output() notify = new EventEmitter<string>();
+  @Output() reloadState = new EventEmitter<void>();
 
   // Filter and input bounds
   searchTerm: string = '';
@@ -54,6 +55,8 @@ export class StudentsComponent implements OnInit {
   isFormModalOpen: boolean = false;
   isImportModalOpen: boolean = false;
   isAddMonthModalOpen: boolean = false;
+  isDeleteMonthModalOpen: boolean = false;
+  monthToDelete: string = '';
   
   selectedStudent: Student | null = null;
   bulkCsvText: string = '';
@@ -279,6 +282,47 @@ export class StudentsComponent implements OnInit {
     this.studentCurrentPage = 1;
     this.isAddMonthModalOpen = false;
     this.notify.emit(`Đã khởi tạo thành công sổ theo dõi học phí Tháng ${newMonthKey}!`);
+  }
+
+  confirmDeleteMonth(month: string) {
+    this.monthToDelete = month;
+    this.isDeleteMonthModalOpen = true;
+  }
+
+  closeDeleteMonthModal() {
+    this.isDeleteMonthModalOpen = false;
+    this.monthToDelete = '';
+  }
+
+  submitDeleteMonth() {
+    if (!this.monthToDelete) return;
+    const targetMonth = this.monthToDelete;
+
+    this.apiService.deleteTuitionMonth(targetMonth).subscribe({
+      next: () => {
+        console.log('Successfully deleted tuition month from database:', targetMonth);
+        this.dbMonths = this.dbMonths.filter(m => m !== targetMonth);
+        delete this.tuitionDb[targetMonth];
+        this.saveTuitionDb();
+
+        const remainingMonths = this.getMonths();
+        if (remainingMonths.length > 0) {
+          this.activeMonth = remainingMonths[remainingMonths.length - 1];
+        } else {
+          this.activeMonth = '06/2026'; // fallback to standard default instead of empty
+        }
+        
+        this.notify.emit(`Đã xóa hoàn toàn Sổ Thu Phí Tháng ${targetMonth}`);
+        this.studentCurrentPage = 1;
+        this.reloadState.emit(); // Sync NgRx store state (registrations etc)
+        this.closeDeleteMonthModal();
+      },
+      error: (err) => {
+        console.error('Failed to delete tuition month from DB:', err);
+        alert(`Không thể xóa sổ tháng từ hệ thống database. Vui lòng liên hệ quản trị viên.`);
+        this.closeDeleteMonthModal();
+      }
+    });
   }
 
   syncMonthStudents() {
