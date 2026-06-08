@@ -18,8 +18,9 @@ public class RegistrationDTO {
     @NotBlank(message = "Mã học viên không được để trống")
     private String studentId;
 
-    @NotBlank(message = "Mã kỳ thi không được để trống")
     private String examSessionId;
+
+    private String month;
 
     @NotBlank(message = "Cấp đai hiện tại không được để trống")
     private String currentBelt;

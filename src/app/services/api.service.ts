@@ -16,8 +16,9 @@ export class ApiService {
     return this.http.get<Student[]>(`${this.baseUrl}/students`);
   }
 
-  addStudent(student: Student): Observable<Student> {
-    return this.http.post<Student>(`${this.baseUrl}/students`, student);
+  addStudent(student: Student, month?: string): Observable<Student> {
+    const url = month ? `${this.baseUrl}/students?month=${encodeURIComponent(month)}` : `${this.baseUrl}/students`;
+    return this.http.post<Student>(url, student);
   }
 
   updateStudent(student: Student): Observable<Student> {

@@ -31,6 +31,7 @@
         <ng-container *ngIf="activeTab === 'students'">
           <app-students
             [students]="(students$ | async) || []"
+            [registrations]="(registrations$ | async) || []"
             (addStudent)="onAddStudent($event)"
             (updateStudent)="onUpdateStudent($event)"
             (deleteStudentId)="onDeleteStudentId($event)"

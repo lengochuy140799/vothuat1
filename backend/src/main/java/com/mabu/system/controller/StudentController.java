@@ -22,9 +22,14 @@ public class StudentController {
         return ResponseEntity.ok(studentService.getAllStudents());
     }
 
+    @GetMapping("/{monthPart1}/{monthPart2}")
+    public ResponseEntity<List<StudentDTO>> getStudentsByMonth(@PathVariable String monthPart1, @PathVariable String monthPart2) {
+        String month = monthPart1 + "/" + monthPart2;
+        return ResponseEntity.ok(studentService.getStudentsByMonth(month));
+    }
+
     @GetMapping("/by-month/{month:.+}")
-    public ResponseEntity<List<StudentDTO>> getStudentsByMonth(@PathVariable String month) {
-        // Since month has "/" e.g. "06/2026", it's passed as a path variable or request param
+    public ResponseEntity<List<StudentDTO>> getStudentsByMonthOld(@PathVariable String month) {
         return ResponseEntity.ok(studentService.getStudentsByMonth(month));
     }
 
@@ -34,8 +39,10 @@ public class StudentController {
     }
 
     @PostMapping
-    public ResponseEntity<StudentDTO> createStudent(@Valid @RequestBody StudentDTO dto) {
-        return new ResponseEntity<>(studentService.saveStudent(dto), HttpStatus.CREATED);
+    public ResponseEntity<StudentDTO> createStudent(
+            @Valid @RequestBody StudentDTO dto,
+            @RequestParam(required = false) String month) {
+        return new ResponseEntity<>(studentService.saveStudent(dto, month), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")

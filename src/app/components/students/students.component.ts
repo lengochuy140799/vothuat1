@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Student } from '../../../types';
+import { Student, Registration } from '../../../types';
 import { IconComponent } from '../icon/icon.component';
 import { ExcelExporter } from '../../utils/excel-helper';
 import { ApiService } from '../../services/api.service';
@@ -37,8 +37,9 @@ export interface MonthlyBillingItem {
 })
 export class StudentsComponent implements OnInit {
   @Input() students: Student[] = [];
+  @Input() registrations: Registration[] = [];
   
-  @Output() addStudent = new EventEmitter<Student>();
+  @Output() addStudent = new EventEmitter<{ student: Student; month?: string }>();
   @Output() updateStudent = new EventEmitter<Student>();
   @Output() deleteStudentId = new EventEmitter<string>();
   @Output() bulkImport = new EventEmitter<Student[]>();
@@ -287,14 +288,23 @@ export class StudentsComponent implements OnInit {
 
   // Active items for activeMonth
   getActiveMonthItems(): MonthlyBillingItem[] {
-    const records = this.tuitionDb[this.activeMonth] || [];
+    const regsForMonth = this.registrations.filter(r => r.month === this.activeMonth);
     const items: MonthlyBillingItem[] = [];
 
-    records.forEach((rec, idx) => {
-      if (rec.isDeleted) return; // Skip soft deletes
-
-      const student = this.students.find(s => s.id === rec.studentId);
+    regsForMonth.forEach((reg, idx) => {
+      const student = this.students.find(s => s.id === reg.studentId);
       if (student) {
+        let status: 'Đã đóng' | 'Chưa đóng' = reg.paymentStatus === 'PAID' ? 'Đã đóng' : 'Chưa đóng';
+        let fee = 400000;
+
+        const records = this.tuitionDb[this.activeMonth] || [];
+        const tuitionRec = records.find(r => r.studentId === student.id);
+        if (tuitionRec) {
+          if (tuitionRec.isDeleted) return;
+          fee = tuitionRec.fee;
+          status = tuitionRec.status;
+        }
+
         items.push({
           id: student.id,
           name: student.name,
@@ -304,8 +314,8 @@ export class StudentsComponent implements OnInit {
           currentBelt: student.currentBelt,
           registrationDate: student.registrationDate,
           address: student.address || '',
-          tuitionFee: rec.fee,
-          tuitionStatus: rec.status,
+          tuitionFee: fee,
+          tuitionStatus: status,
           monthRecordIdx: idx
         });
       }
@@ -519,7 +529,7 @@ export class StudentsComponent implements OnInit {
       }
       
       // General profile creation
-      this.addStudent.emit(studentData);
+      this.addStudent.emit({ student: studentData, month: this.activeMonth });
       
       // Monthly state mapping creation
       if (!this.tuitionDb[this.activeMonth]) {

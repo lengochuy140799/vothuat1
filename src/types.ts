@@ -22,7 +22,8 @@ export interface ExamSession {
 export interface Registration {
   id: string;
   studentId: string;
-  examSessionId: string;
+  examSessionId?: string | null;
+  month?: string;
   currentBelt: 'Trắng' | 'Vàng' | 'Xanh' | 'Đỏ' | 'Đen';
   targetBelt: 'Trắng' | 'Vàng' | 'Xanh' | 'Đỏ' | 'Đen';
   examFee: number;

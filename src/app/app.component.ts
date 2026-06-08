@@ -81,8 +81,12 @@ export class AppComponent implements OnInit {
   }
 
   // Students actions mappings
-  onAddStudent(student: Student) {
-    this.store.dispatch(AppActions.addStudent({ student }));
+  onAddStudent(event: any) {
+    if (event && event.student) {
+      this.store.dispatch(AppActions.addStudent({ student: event.student, month: event.month }));
+    } else if (event) {
+      this.store.dispatch(AppActions.addStudent({ student: event, month: undefined }));
+    }
   }
 
   onUpdateStudent(student: Student) {

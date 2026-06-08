@@ -84,7 +84,7 @@ export class AppEffects {
         try {
           switch (action.type) {
             case AppActions.addStudent.type:
-              this.apiService.addStudent((action as any).student).subscribe({
+              this.apiService.addStudent((action as any).student, (action as any).month).subscribe({
                 next: () => console.log('Successfully saved student to database'),
                 error: (err) => console.error('Failed to sync student:', err)
               });
@@ -196,6 +196,21 @@ export class AppEffects {
       ofType(AppActions.showSuccessNotification),
       delay(3000),
       map(() => AppActions.clearNotification())
+    )
+  );
+
+  reloadAfterMutation$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(
+        AppActions.addStudent,
+        AppActions.updateStudent,
+        AppActions.deleteStudent,
+        AppActions.addRegistration,
+        AppActions.deleteRegistration,
+        AppActions.togglePayment
+      ),
+      delay(300),
+      map(() => AppActions.loadInitialState())
     )
   );
 }

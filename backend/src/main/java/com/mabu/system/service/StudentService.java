@@ -5,12 +5,16 @@ import com.mabu.system.entity.Student;
 import com.mabu.system.entity.Tuition;
 import com.mabu.system.exception.ResourceNotFoundException;
 import com.mabu.system.mapper.StudentMapper;
+import com.mabu.system.entity.Registration;
+import com.mabu.system.repository.RegistrationRepository;
 import com.mabu.system.repository.StudentRepository;
 import com.mabu.system.repository.TuitionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -19,12 +23,13 @@ public class StudentService {
 
     private final StudentRepository studentRepository;
     private final TuitionRepository tuitionRepository;
+    private final RegistrationRepository registrationRepository;
     private final StudentMapper studentMapper;
 
     @Transactional(readOnly = true)
     public List<StudentDTO> getStudentsByMonth(String month) {
-        return tuitionRepository.findByMonthActive(month).stream()
-                .map(Tuition::getStudent)
+        return registrationRepository.findByMonthWithDetails(month).stream()
+                .map(Registration::getStudent)
                 .map(studentMapper::toDTO)
                 .collect(Collectors.toList());
     }
@@ -45,6 +50,11 @@ public class StudentService {
 
     @Transactional
     public StudentDTO saveStudent(StudentDTO dto) {
+        return saveStudent(dto, null);
+    }
+
+    @Transactional
+    public StudentDTO saveStudent(StudentDTO dto, String month) {
         Student student = studentRepository.findById(dto.getId())
                 .orElseGet(() -> studentMapper.toEntity(dto));
         
@@ -57,6 +67,24 @@ public class StudentService {
         student.setAddress(dto.getAddress());
         
         Student saved = studentRepository.save(student);
+
+        if (month != null && !month.trim().isEmpty()) {
+            if (!registrationRepository.existsByStudentIdAndMonth(saved.getId(), month)) {
+                String regId = "REG-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+                Registration reg = Registration.builder()
+                        .id(regId)
+                        .student(saved)
+                        .month(month)
+                        .currentBelt(saved.getCurrentBelt())
+                        .targetBelt(saved.getCurrentBelt())
+                        .examFee(BigDecimal.ZERO)
+                        .paymentStatus("UNPAID")
+                        .notes("Đăng ký đóng học phí tháng " + month)
+                        .build();
+                registrationRepository.save(reg);
+            }
+        }
+        
         return studentMapper.toDTO(saved);
     }
 

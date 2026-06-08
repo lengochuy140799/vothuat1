@@ -23,8 +23,11 @@ public class Registration {
     private Student student;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "exam_session_id", nullable = false)
+    @JoinColumn(name = "exam_session_id", nullable = true)
     private ExamSession examSession;
+
+    @Column(name = "month", length = 20)
+    private String month;
 
     @Column(name = "current_belt", nullable = false, length = 20)
     private String currentBelt;
