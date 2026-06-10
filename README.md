@@ -115,6 +115,39 @@ Frontend được quản lý từ thư mục gốc của dự án. npm run dev
 
 ---
 
+## 🌐 Triển khai Lên Cloud (Vercel + Railway)
+
+Hệ thống đã được thiết kế sẵn sàng để triển khai song song: **Angular** trên **Vercel** và **Spring Boot** trên **Railway**.
+
+### 1. Cấu hình Môi trường Frontend (Angular)
+Để kết nối linh hoạt giữa môi trường Local và Production, hệ thống sử dụng các tệp tin cấu hình môi trường Angular (`src/environments/`):
+*   **Local (`environment.ts`)**: Mặc định kết nối tới API local `http://localhost:8080/api`.
+*   **Production (`environment.prod.ts`)**: Tự động kích hoạt khi chạy lệnh build production (`npm run build`). API URL mặc định là URL của dự án Railway của bạn.
+
+#### Cách cấu hình URL Backend động trên Vercel:
+Có 2 cách để quý thầy/cô liên kết Frontend trên Vercel tới Backend trên Railway:
+*   **Cách 1 (Sửa trực tiếp):** Vào tệp `src/environments/environment.prod.ts` và thay giá trị ở trường `'https://vothuat-backend.up.railway.app/api'` thành địa chỉ Backend Railway thực tế của bạn trước khi đẩy code lên git.
+*   **Cách 2 (Độ linh hoạt cao - Không cần build lại):** Dự án hỗ trợ đọc cấu hình động trực tiếp từ biến toàn cục của trình duyệt. Tại trang cấu hình Vercel (Settings -> Environment Variables), quý thầy/cô có thể khai báo một biến script hoặc đơn giản là cho phép trình duyệt của khách hàng nạp biến qua `index.html` hoặc thiết lập biến `API_URL`.
+
+### 2. Sửa lỗi CORS (Cross-Origin Resource Sharing)
+Khi chạy Frontend ở URL Vercel (ví dụ: `https://vothuat.vercel.app`) và Backend ở Railway, trình duyệt sẽ chặn yêu cầu nếu không được cấp phép CORS.
+
+#### Các bước xử lý triệt để lỗi CORS:
+1.  **Thêm URL Vercel của bạn vào danh sách cho phép của Backend:**
+    Mở file cấu hình bảo mật backend tại: `/backend/src/main/java/com/mabu/system/config/SecurityConfig.java`
+2.  Tìm đến phương thức `@Bean public CorsConfigurationSource corsConfigurationSource()` và đảm bảo rằng URL Vercel của bạn đã nằm trong danh sách `setAllowedOrigins`:
+    ```java
+    config.setAllowedOrigins(Arrays.asList(
+            "http://localhost:4200",
+            "http://localhost:3000",
+            "https://vothuat.vercel.app",  // <-- Thêm URL Vercel chính thức của bạn tại đây
+            "https://ten-du-an-cua-ban.vercel.app" 
+    ));
+    ```
+3.  **Deploy lại Backend:** Khi đẩy Code mới có URL này lên Railway, Backend sẽ tự động chấp nhận mọi Request truyền tài khoản, thông tin võ sinh và học phí từ trang Vercel của bạn.
+
+---
+
 ## 💡 Các Lưu Ý Quan Trọng Khi Phát Triển
 
 *   **Tách biệt Backend & Frontend**: Trong quá trình phát triển, hãy đảm bảo cả Spring Boot (Port 8080) và Angular (Port 3000) đều được khởi chạy đồng thời.
