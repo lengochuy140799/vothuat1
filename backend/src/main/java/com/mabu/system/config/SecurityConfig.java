@@ -41,11 +41,12 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
 
-        // ✅ Allowed origins (FE local + FE deploy)
-        config.setAllowedOrigins(Arrays.asList(
-                "http://localhost:4200",
-                "http://localhost:3000",
-                "https://vothuat.vercel.app"
+        // ✅ Allowed origin patterns (FE local + Vercel deploy/preview + AI Studio Preview)
+        config.setAllowedOriginPatterns(Arrays.asList(
+                "http://localhost:*",
+                "https://*.vercel.app",
+                "https://*.run.app",
+                "https://*.railway.app"
         ));
 
         // ✅ HTTP methods
