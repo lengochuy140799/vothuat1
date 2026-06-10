@@ -4,5 +4,5 @@ export const environment = {
   // Bạn cũng có thể thiết lập window.API_URL trên Vercel để ghi đè động
   apiUrl: (typeof window !== 'undefined' && (window as any).API_URL)
     ? (window as any).API_URL
-    : 'https://vothuat-backend.up.railway.app/api'
+    : 'https://vothuat1-production.up.railway.app/api'
 };
