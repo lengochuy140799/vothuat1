@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Student, Registration } from '../../../types';
+import { Student, Registration, BeltType } from '../../../types';
 import { IconComponent } from '../icon/icon.component';
 import { ExcelExporter } from '../../utils/excel-helper';
 import { ApiService } from '../../services/api.service';
@@ -20,7 +20,7 @@ export interface MonthlyBillingItem {
   gender: 'Nam' | 'Nữ';
   birth: string;
   phone: string;
-  currentBelt: 'Trắng' | 'Vàng' | 'Xanh' | 'Đỏ' | 'Đen';
+  currentBelt: BeltType;
   registrationDate: string;
   tuitionFee: number;
   tuitionStatus: 'Đã đóng' | 'Chưa đóng';
@@ -68,7 +68,7 @@ export class StudentsComponent implements OnInit {
   formBirth: string = '';
   formPhone: string = '';
   formAddress: string = '';
-  formBelt: 'Trắng' | 'Vàng' | 'Xanh' | 'Đỏ' | 'Đen' = 'Trắng';
+  formBelt: BeltType = 'Đen';
   formRegDate: string = '';
   formFee: number = 400000;
   formTuitionStatus: 'Đã đóng' | 'Chưa đóng' = 'Chưa đóng';
@@ -437,7 +437,7 @@ export class StudentsComponent implements OnInit {
     this.formBirth = '2012-01-01';
     this.formPhone = '';
     this.formAddress = '';
-    this.formBelt = 'Trắng';
+    this.formBelt = 'Đen';
     this.formRegDate = new Date().toISOString().split('T')[0];
     this.formFee = 400000;
     this.formTuitionStatus = 'Chưa đóng';
@@ -667,7 +667,7 @@ export class StudentsComponent implements OnInit {
         birth: item.birth || '2012-01-01',
         phone: item.phone || '0901234567',
         address: '',
-        currentBelt: item.currentBelt || 'Trắng',
+        currentBelt: item.currentBelt || 'Đen',
         registrationDate: item.registrationDate || new Date().toISOString().split('T')[0],
         createdAt: new Date().toISOString()
       };
@@ -814,13 +814,20 @@ export class StudentsComponent implements OnInit {
   }
 
   getBeltColorClass(belt: string): string {
-    switch (belt) {
-      case 'Trắng': return 'bg-slate-50 text-slate-600 border-slate-200';
-      case 'Vàng': return 'bg-amber-50 text-amber-800 border-amber-200';
-      case 'Xanh': return 'bg-blue-50 text-blue-800 border-blue-200';
-      case 'Đỏ': return 'bg-red-50 text-red-800 border-red-200';
-      case 'Đen': return 'bg-slate-900 text-slate-100 border-slate-950 p-[3px_7px] shadow-sm';
-      default: return 'bg-slate-50 text-slate-600 border-slate-200';
+    const b = belt ? belt.toLowerCase() : '';
+    if (b.includes('đen xanh')) {
+      return 'bg-slate-800 text-blue-300 border-slate-700/80 px-2 py-0.5 shadow-xs font-bold';
+    } else if (b.includes('đen')) {
+      return 'bg-slate-900 text-slate-100 border-slate-950 px-2 py-0.5 shadow-sm font-bold';
+    } else if (b.includes('xanh')) {
+      return 'bg-blue-50 text-blue-800 border-blue-200';
+    } else if (b.includes('đỏ')) {
+      return 'bg-red-50 text-red-800 border-red-200';
+    } else if (b.includes('vàng')) {
+      return 'bg-amber-50 text-amber-800 border-amber-200';
+    } else if (b.includes('trắng')) {
+      return 'bg-slate-50 text-slate-600 border-slate-200';
     }
+    return 'bg-slate-50 text-slate-600 border-slate-200';
   }
 }

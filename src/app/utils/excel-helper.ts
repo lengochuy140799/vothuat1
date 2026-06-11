@@ -1,4 +1,4 @@
-import { Student, Registration, ExamSession } from '../../types';
+import { Student, Registration, ExamSession, BeltType } from '../../types';
 import * as XLSX from 'xlsx';
 
 export class ExcelExporter {
@@ -189,12 +189,25 @@ export class ExcelExporter {
 
             const phone = row[5] ? String(row[5]).trim() : '0901234567';
             
-            let currentBelt: 'Trắng' | 'Vàng' | 'Xanh' | 'Đỏ' | 'Đen' = 'Trắng';
+            let currentBelt: BeltType = 'Đen Xanh';
             const rawBelt = row[6] ? String(row[6]).trim() : '';
-            if (rawBelt.includes('Vàng')) currentBelt = 'Vàng';
-            else if (rawBelt.includes('Xanh')) currentBelt = 'Xanh';
-            else if (rawBelt.includes('Đỏ')) currentBelt = 'Đỏ';
-            else if (rawBelt.includes('Đen')) currentBelt = 'Đen';
+            if (rawBelt) {
+              const lowerRaw = rawBelt.toLowerCase();
+              if (lowerRaw.includes('đen xanh')) currentBelt = 'Đen Xanh';
+              else if (lowerRaw.includes('xanh 1')) currentBelt = 'Xanh 1';
+              else if (lowerRaw.includes('xanh 2')) currentBelt = 'Xanh 2';
+              else if (lowerRaw.includes('xanh 3')) currentBelt = 'Xanh 3';
+              else if (lowerRaw.includes('đỏ 1')) currentBelt = 'Đỏ 1';
+              else if (lowerRaw.includes('đỏ 2')) currentBelt = 'Đỏ 2';
+              else if (lowerRaw.includes('đỏ 3')) currentBelt = 'Đỏ 3';
+              else if (lowerRaw.includes('đỏ')) currentBelt = 'Đỏ';
+              else if (lowerRaw.includes('vàng 1')) currentBelt = 'Vàng 1';
+              else if (lowerRaw.includes('vàng 2')) currentBelt = 'Vàng 2';
+              else if (lowerRaw.includes('vàng 3')) currentBelt = 'Vàng 3';
+              else if (lowerRaw.includes('vàng 4')) currentBelt = 'Vàng 4';
+              else if (lowerRaw.includes('vàng')) currentBelt = 'Vàng';
+              else if (lowerRaw.includes('trắng')) currentBelt = 'Trắng';
+            }
 
             let regDate = new Date().toISOString().split('T')[0];
             if (row[7]) {
@@ -253,12 +266,25 @@ export class ExcelExporter {
         const birth = columns[4] || '2012-01-01';
         const phone = columns[5] || '0901234567';
         
-        let currentBelt: 'Trắng' | 'Vàng' | 'Xanh' | 'Đỏ' | 'Đen' = 'Trắng';
+        let currentBelt: BeltType = 'Đen Xanh';
         const rawBelt = columns[6] || '';
-        if (rawBelt.includes('Vàng')) currentBelt = 'Vàng';
-        else if (rawBelt.includes('Xanh')) currentBelt = 'Xanh';
-        else if (rawBelt.includes('Đỏ')) currentBelt = 'Đỏ';
-        else if (rawBelt.includes('Đen')) currentBelt = 'Đen';
+        if (rawBelt) {
+          const lowerRaw = rawBelt.toLowerCase();
+          if (lowerRaw.includes('đen xanh')) currentBelt = 'Đen Xanh';
+          else if (lowerRaw.includes('xanh 1')) currentBelt = 'Xanh 1';
+          else if (lowerRaw.includes('xanh 2')) currentBelt = 'Xanh 2';
+          else if (lowerRaw.includes('xanh 3')) currentBelt = 'Xanh 3';
+          else if (lowerRaw.includes('đỏ 1')) currentBelt = 'Đỏ 1';
+          else if (lowerRaw.includes('đỏ 2')) currentBelt = 'Đỏ 2';
+          else if (lowerRaw.includes('đỏ 3')) currentBelt = 'Đỏ 3';
+          else if (lowerRaw.includes('đỏ')) currentBelt = 'Đỏ';
+          else if (lowerRaw.includes('vàng 1')) currentBelt = 'Vàng 1';
+          else if (lowerRaw.includes('vàng 2')) currentBelt = 'Vàng 2';
+          else if (lowerRaw.includes('vàng 3')) currentBelt = 'Vàng 3';
+          else if (lowerRaw.includes('vàng 4')) currentBelt = 'Vàng 4';
+          else if (lowerRaw.includes('vàng')) currentBelt = 'Vàng';
+          else if (lowerRaw.includes('trắng')) currentBelt = 'Trắng';
+        }
 
         let regDate = columns[7] || new Date().toISOString().split('T')[0];
 

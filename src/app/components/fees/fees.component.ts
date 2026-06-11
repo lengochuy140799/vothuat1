@@ -112,13 +112,20 @@ export class FeesComponent implements OnChanges {
   }
 
   getBeltColorClass(belt: string): string {
-    switch (belt) {
-      case 'Trắng': return 'bg-slate-50 text-slate-600 border-slate-200';
-      case 'Vàng': return 'bg-amber-50 text-amber-850 border-amber-200';
-      case 'Xanh': return 'bg-blue-50 text-blue-800 border-blue-200';
-      case 'Đỏ': return 'bg-red-50 text-red-800 border-red-200';
-      case 'Đen': return 'bg-slate-900 text-slate-100 border-slate-950 p-[2px_5px] shadow-sm';
-      default: return 'bg-slate-50 text-slate-650 border-slate-200';
+    const b = belt ? belt.toLowerCase() : '';
+    if (b.includes('đen xanh')) {
+      return 'bg-slate-850 text-blue-300 border-slate-705 p-[1px_4px] shadow-sm font-bold';
+    } else if (b.includes('đen')) {
+      return 'bg-slate-900 text-slate-100 border-slate-950 p-[1px_4px] shadow-sm font-bold';
+    } else if (b.includes('xanh')) {
+      return 'bg-blue-50 text-blue-800 border-blue-200';
+    } else if (b.includes('đỏ')) {
+      return 'bg-red-50 text-red-800 border-red-200';
+    } else if (b.includes('vàng')) {
+      return 'bg-amber-50 text-amber-850 border-amber-200';
+    } else if (b.includes('trắng')) {
+      return 'bg-slate-50 text-slate-600 border-slate-200';
     }
+    return 'bg-slate-50 text-slate-650 border-slate-200';
   }
 }

@@ -1,4 +1,4 @@
-import { Student, ExamSession, Registration } from './types';
+import { Student, ExamSession, Registration, BeltType } from './types';
 
 export const INITIAL_STUDENTS: Student[] = [
   {
@@ -231,23 +231,54 @@ export const INITIAL_REGISTRATIONS: Registration[] = [
 ];
 
 // Belt Fee helper based on target belt level
-export function getExamFeeForBelt(targetBelt: 'Trắng' | 'Vàng' | 'Xanh' | 'Đỏ' | 'Đen'): number {
+export const BELT_PROGRESSION_LIST: BeltType[] = [
+  'Đen',
+  'Xanh',
+  'Xanh 1',
+  'Xanh 2',
+  'Xanh 3',
+  'Đỏ',
+  'Đỏ 1',
+  'Đỏ 2',
+  'Đỏ 3',
+  'Vàng',
+  'Vàng 1',
+  'Vàng 2',
+  'Vàng 3',
+  'Vàng 4'
+];
+
+export function getExamFeeForBelt(targetBelt: BeltType): number {
   switch (targetBelt) {
-    case 'Vàng': return 200000;
-    case 'Xanh': return 300000;
-    case 'Đỏ': return 400000;
-    case 'Đen': return 500000;
+    case 'Đen': return 200000;
+    case 'Xanh': return 200000;
+    case 'Xanh 1': return 200000;
+    case 'Xanh 2': return 200000;
+    case 'Xanh 3': return 200000;
+    case 'Đỏ': return 300000;
+    case 'Đỏ 1': return 300000;
+    case 'Đỏ 2': return 300000;
+    case 'Đỏ 3': return 300000;
+    case 'Vàng': return 500000;
+    case 'Vàng 1': return 1000000;
+    case 'Vàng 2': return 1000000;
+    case 'Vàng 3': return 1500000;
+    case 'Vàng 4': return 2000000;
+    // Backwards compatible fallbacks
+    case 'Đen Xanh': return 200000;
+    case 'Trắng': return 200000;
     default: return 200000;
   }
 }
 
 // Next belt tier helper
-export function getNextBelt(currentBelt: 'Trắng' | 'Vàng' | 'Xanh' | 'Đỏ' | 'Đen'): 'Trắng' | 'Vàng' | 'Xanh' | 'Đỏ' | 'Đen' {
-  switch (currentBelt) {
-    case 'Trắng': return 'Vàng';
-    case 'Vàng': return 'Xanh';
-    case 'Xanh': return 'Đỏ';
-    case 'Đỏ': return 'Đen';
-    case 'Đen': return 'Đen'; // Already max
-  }
+export function getNextBelt(currentBelt: BeltType): BeltType {
+  let normalized = currentBelt;
+  if (currentBelt === 'Đen Xanh') normalized = 'Đen';
+  if (currentBelt === 'Trắng') normalized = 'Đen';
+
+  const index = BELT_PROGRESSION_LIST.indexOf(normalized);
+  if (index === -1) return 'Xanh'; // Safe default
+  if (index >= BELT_PROGRESSION_LIST.length - 1) return 'Vàng 4'; // Already highest
+  return BELT_PROGRESSION_LIST[index + 1];
 }

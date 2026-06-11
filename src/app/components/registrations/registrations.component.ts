@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Student, ExamSession, Registration } from '../../../types';
+import { Student, ExamSession, Registration, BeltType } from '../../../types';
 import { IconComponent } from '../icon/icon.component';
 import { ExcelExporter } from '../../utils/excel-helper';
 import { getExamFeeForBelt, getNextBelt } from '../../../mockData';
@@ -31,7 +31,7 @@ export class RegistrationsComponent implements OnChanges {
   isRegisterModalOpen: boolean = false;
   studentSearchTerm: string = '';
   selectedStudentId: string = '';
-  targetBelt: 'Trắng' | 'Vàng' | 'Xanh' | 'Đỏ' | 'Đen' = 'Vàng';
+  targetBelt: BeltType = 'Vàng';
   fee: number = 200000;
   paymentStatus: 'PAID' | 'UNPAID' = 'UNPAID';
   notes: string = '';
@@ -43,7 +43,7 @@ export class RegistrationsComponent implements OnChanges {
   newStudentBirth: string = '2012-01-01';
   newStudentPhone: string = '';
   newStudentAddress: string = '';
-  newStudentBelt: 'Trắng' | 'Vàng' | 'Xanh' | 'Đỏ' | 'Đen' = 'Trắng';
+  newStudentBelt: BeltType = 'Đen';
 
   activeSession: ExamSession | null = null;
   activeSessionRegs: Registration[] = [];
@@ -134,7 +134,7 @@ export class RegistrationsComponent implements OnChanges {
     }
   }
 
-  onTargetBeltChange(belt: 'Trắng' | 'Vàng' | 'Xanh' | 'Đỏ' | 'Đen') {
+  onTargetBeltChange(belt: BeltType) {
     this.targetBelt = belt;
     this.fee = getExamFeeForBelt(belt);
   }
@@ -194,14 +194,21 @@ export class RegistrationsComponent implements OnChanges {
   }
 
   getBeltColorClass(belt: string): string {
-    switch (belt) {
-      case 'Trắng': return 'bg-slate-50 text-slate-600 border-slate-200';
-      case 'Vàng': return 'bg-amber-50 text-amber-800 border-amber-200';
-      case 'Xanh': return 'bg-blue-50 text-blue-800 border-blue-200';
-      case 'Đỏ': return 'bg-red-50 text-red-800 border-red-200';
-      case 'Đen': return 'bg-slate-900 text-slate-100 border-slate-950';
-      default: return 'bg-slate-50 text-slate-600 border-slate-200';
+    const b = belt ? belt.toLowerCase() : '';
+    if (b.includes('đen xanh')) {
+      return 'bg-slate-850 text-blue-300 border-slate-705 px-3 py-1 font-bold';
+    } else if (b.includes('đen')) {
+      return 'bg-slate-900 text-slate-100 border-slate-950 px-3 py-1 font-bold';
+    } else if (b.includes('xanh')) {
+      return 'bg-blue-50 text-blue-800 border-blue-200';
+    } else if (b.includes('đỏ')) {
+      return 'bg-red-50 text-red-800 border-red-200';
+    } else if (b.includes('vàng')) {
+      return 'bg-amber-50 text-amber-800 border-amber-200';
+    } else if (b.includes('trắng')) {
+      return 'bg-slate-50 text-slate-600 border-slate-200';
     }
+    return 'bg-slate-50 text-slate-600 border-slate-200';
   }
 
   generateNewId(): string {
@@ -223,7 +230,7 @@ export class RegistrationsComponent implements OnChanges {
     this.newStudentBirth = '2012-01-01';
     this.newStudentPhone = '';
     this.newStudentAddress = '';
-    this.newStudentBelt = 'Trắng';
+    this.newStudentBelt = 'Đen';
     this.isAddStudentModalOpen = true;
   }
 
