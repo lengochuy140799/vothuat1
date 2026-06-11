@@ -27,7 +27,7 @@ public class StudentDTO {
     private String phone;
 
     @NotBlank(message = "Đai hiện tại không được để trống")
-    @Pattern(regexp = "Trắng|Vàng|Xanh|Đỏ|Đen", message = "Đai màu không hợp lệ")
+    @Pattern(regexp = "Đen|Xanh|Xanh 1|Xanh 2|Xanh 3|Đỏ|Đỏ 1|Đỏ 2|Đỏ 3|Vàng|Vàng 1|Vàng 2|Vàng 3|Vàng 4|Trắng|Đen Xanh", message = "Đai màu không hợp lệ")
     private String currentBelt;
 
     @NotBlank(message = "Ngày nhập học không được để trống")

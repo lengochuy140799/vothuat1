@@ -198,9 +198,9 @@ public class TuitionService {
                 registrationRepository.save(reg);
             }
 
-            // Get tuition fee from previous month (or default to 400000)
+            // Get tuition fee from previous month (or default to 300000)
             Optional<Tuition> prevTuitionOpt = tuitionRepository.findByStudentIdAndMonth(student.getId(), prevMonth);
-            BigDecimal fee = prevTuitionOpt.isPresent() ? prevTuitionOpt.get().getFee() : new BigDecimal("400000");
+            BigDecimal fee = prevTuitionOpt.isPresent() ? prevTuitionOpt.get().getFee() : new BigDecimal("300000");
 
             // 2. Create tuition if missing
             Optional<Tuition> existing = tuitionRepository.findByStudentIdAndMonth(student.getId(), currentMonth);

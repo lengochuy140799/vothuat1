@@ -70,7 +70,7 @@ export class StudentsComponent implements OnInit {
   formAddress: string = '';
   formBelt: BeltType = 'Đen';
   formRegDate: string = '';
-  formFee: number = 400000;
+  formFee: number = 300000;
   formTuitionStatus: 'Đã đóng' | 'Chưa đóng' = 'Chưa đóng';
 
   // Month-by-month database
@@ -276,7 +276,7 @@ export class StudentsComponent implements OnInit {
       const student = this.students.find(s => s.id === reg.studentId);
       if (student) {
         let status: 'Đã đóng' | 'Chưa đóng' = reg.paymentStatus === 'PAID' ? 'Đã đóng' : 'Chưa đóng';
-        let fee = 400000;
+        let fee = 300000;
 
         const records = this.tuitionDb[this.activeMonth] || [];
         const tuitionRec = records.find(r => r.studentId === student.id);
@@ -439,7 +439,7 @@ export class StudentsComponent implements OnInit {
     this.formAddress = '';
     this.formBelt = 'Đen';
     this.formRegDate = new Date().toISOString().split('T')[0];
-    this.formFee = 400000;
+    this.formFee = 300000;
     this.formTuitionStatus = 'Chưa đóng';
     this.isFormModalOpen = true;
   }

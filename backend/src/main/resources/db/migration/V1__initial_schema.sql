@@ -15,7 +15,7 @@ CREATE TABLE students (
     gender VARCHAR(10) NOT NULL CHECK (gender IN ('Nam', 'Nữ')),
     birth VARCHAR(50) NOT NULL,
     phone VARCHAR(20) NOT NULL,
-    current_belt VARCHAR(20) NOT NULL CHECK (current_belt IN ('Trắng', 'Vàng', 'Xanh', 'Đỏ', 'Đen')),
+    current_belt VARCHAR(20) NOT NULL CHECK (current_belt IN ('Đen', 'Xanh', 'Xanh 1', 'Xanh 2', 'Xanh 3', 'Đỏ', 'Đỏ 1', 'Đỏ 2', 'Đỏ 3', 'Vàng', 'Vàng 1', 'Vàng 2', 'Vàng 3', 'Vàng 4', 'Trắng', 'Đen Xanh')),
     registration_date VARCHAR(50) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

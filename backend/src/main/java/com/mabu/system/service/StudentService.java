@@ -163,7 +163,7 @@ public class StudentService {
                             .student(s)
                             .month(month)
                             .status("Chưa đóng")
-                            .fee(new BigDecimal("400000"))
+                            .fee(new BigDecimal("300000"))
                             .isDeleted(false)
                             .build();
                     tuitionRepository.save(tui);
