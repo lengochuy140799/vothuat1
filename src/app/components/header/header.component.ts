@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IconComponent } from '../icon/icon.component';
 
@@ -11,4 +11,5 @@ import { IconComponent } from '../icon/icon.component';
 })
 export class HeaderComponent {
   @Input() openExamName: string | null = null;
+  @Output() toggleSidebar = new EventEmitter<void>();
 }

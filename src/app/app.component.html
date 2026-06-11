@@ -1,18 +1,30 @@
-<div id="app-container" class="flex h-screen overflow-hidden bg-slate-50 font-sans">
+<div id="app-container" class="flex h-screen overflow-hidden bg-slate-50 font-sans relative">
+  <!-- Backdrop overlay when mobile sidebar is active -->
+  <div 
+    *ngIf="sidebarOpen" 
+    (click)="sidebarOpen = false" 
+    class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-30 md:hidden animate-fadeIn cursor-pointer"
+  ></div>
+
   <!-- 1. Left Navigation Sidebar -->
   <app-sidebar 
     [activeTab]="activeTab" 
     [openExamName]="(openSessionName$ | async) || ''"
+    [sidebarOpen]="sidebarOpen"
     (activeTabChange)="onTabChange($event)"
+    (closeSidebar)="sidebarOpen = false"
   ></app-sidebar>
 
   <!-- 2. Right Workspace Content Area -->
-  <div class="flex-1 flex flex-col h-full overflow-hidden">
+  <div class="flex-1 flex flex-col h-full overflow-hidden select-none">
     <!-- Top info bar with active session notification -->
-    <app-header [openExamName]="openSessionName$ | async"></app-header>
+    <app-header 
+      [openExamName]="openSessionName$ | async"
+      (toggleSidebar)="sidebarOpen = !sidebarOpen"
+    ></app-header>
 
     <!-- Main dynamic panel container -->
-    <main class="flex-1 p-8 overflow-y-auto">
+    <main class="flex-1 p-4 md:p-8 overflow-y-auto">
       <div class="max-w-7xl mx-auto space-y-6">
         
         <!-- View A: Dashboard Overview -->

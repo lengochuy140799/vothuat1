@@ -1,15 +1,25 @@
-<header class="bg-white border-b border-slate-200/80 px-8 py-3.5 flex items-center justify-between shadow-sm z-10">
+<header id="app-header" class="bg-white border-b border-slate-200/80 px-4 md:px-8 py-3.5 flex items-center justify-between shadow-sm z-10 select-none">
+  <!-- Hamburger Toggle for mobile -->
+  <button 
+    (click)="toggleSidebar.emit()" 
+    id="toggle-sidebar-btn"
+    class="md:hidden p-2 -ml-1 mr-2 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition active:scale-95 cursor-pointer flex items-center justify-center shrink-0"
+    title="Mở Trình Đơn"
+  >
+    <app-icon name="menu" class="w-6 h-6"></app-icon>
+  </button>
+
   <!-- Announcement panel -->
-  <div class="flex items-center gap-3.5 flex-1 max-w-xl">
-    <div class="p-2 rounded-xl bg-rose-50 border border-rose-100 flex items-center justify-center">
+  <div class="flex items-center gap-3.5 flex-1 max-w-xl min-w-0">
+    <div class="p-2 rounded-xl bg-rose-50 border border-rose-100 flex items-center justify-center shrink-0">
       <app-icon name="sparkles" class="w-4 h-4 text-rose-500"></app-icon>
     </div>
-    <div class="text-xs">
-      <span class="font-extrabold text-slate-800 tracking-wide block uppercase text-[10px]">THÔNG BÁO HOẠT ĐỘNG:</span>
-      <p *ngIf="openExamName" class="text-slate-500 font-semibold mt-0.5 animate-fadeIn">
-        Đang tiếp nhận hồ sơ đăng ký thi nâng đai cho dòng: <span class="text-indigo-650 font-bold hover:underline cursor-pointer">{{ openExamName }}</span>
+    <div class="text-xs min-w-0">
+      <span class="font-extrabold text-slate-800 tracking-wide block uppercase text-[10px] truncate">THÔNG BÁO HOẠT ĐỘNG:</span>
+      <p *ngIf="openExamName" class="text-slate-500 font-semibold mt-0.5 animate-fadeIn truncate">
+        Tiếp nhận hồ sơ thi nâng đai cho dòng: <span class="text-indigo-600 font-bold hover:underline cursor-pointer">{{ openExamName }}</span>
       </p>
-      <p *ngIf="!openExamName" class="text-slate-400 font-semibold mt-0.5">
+      <p *ngIf="!openExamName" class="text-slate-400 font-semibold mt-0.5 truncate">
         Dữ liệu đợt thi hiện tạm khép lại. Vui lòng nhấp "Đợt Thi" để khởi tạo kỳ thi mới.
       </p>
     </div>

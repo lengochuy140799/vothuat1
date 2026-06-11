@@ -1,6 +1,10 @@
-<aside id="sidebar-container" class="w-64 bg-slate-900 text-slate-300 flex flex-col h-full border-r border-slate-800 shadow-xl">
+<aside id="sidebar-container" 
+  class="w-64 bg-slate-900 text-slate-300 flex flex-col h-full border-r border-slate-800 shadow-xl fixed md:static inset-y-0 left-0 z-40 transform md:translate-x-0 transition-transform duration-300 select-none"
+  [class.-translate-x-full]="!sidebarOpen"
+  [class.translate-x-0]="sidebarOpen"
+>
   <!-- Brand Logo Header matches Screen Image 1 -->
-  <div class="p-6 border-b border-slate-800">
+  <div class="p-6 border-b border-slate-800 flex items-center justify-between">
     <div class="flex items-center gap-3">
       <div class="bg-indigo-600 p-2.5 rounded-xl shadow-lg shadow-indigo-600/30 flex items-center justify-center">
         <app-icon name="shield" class="w-6 h-6 text-white"></app-icon>
@@ -10,6 +14,14 @@
         <p class="text-indigo-400 text-[9px] uppercase font-black tracking-widest mt-0.5">VÕ THUẬT CỔ TRUYỀN</p>
       </div>
     </div>
+    <!-- Close button for mobile -->
+    <button 
+      (click)="closeSidebar.emit()" 
+      class="md:hidden text-slate-400 hover:text-white p-1.5 hover:bg-slate-800 rounded-xl transition cursor-pointer flex items-center justify-center"
+      title="Đóng Trình Đơn"
+    >
+      <app-icon name="x" class="w-5 h-5"></app-icon>
+    </button>
   </div>
 
   <!-- Navigation links -->

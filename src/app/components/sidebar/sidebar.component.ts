@@ -12,9 +12,12 @@ import { IconComponent } from '../icon/icon.component';
 export class SidebarComponent {
   @Input() activeTab: string = 'dashboard';
   @Input() openExamName: string = '';
+  @Input() sidebarOpen: boolean = false;
   @Output() activeTabChange = new EventEmitter<string>();
+  @Output() closeSidebar = new EventEmitter<void>();
 
   selectTab(tab: string) {
     this.activeTabChange.emit(tab);
+    this.closeSidebar.emit();
   }
 }

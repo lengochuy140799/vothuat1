@@ -42,6 +42,7 @@ import { FeesComponent } from './components/fees/fees.component';
 })
 export class AppComponent implements OnInit {
   activeTab: string = 'dashboard';
+  sidebarOpen: boolean = false;
 
   students$: Observable<Student[]>;
   sessions$: Observable<ExamSession[]>;
@@ -75,6 +76,7 @@ export class AppComponent implements OnInit {
 
   onTabChange(tab: string) {
     this.activeTab = tab;
+    this.sidebarOpen = false;
     if (typeof window !== 'undefined' && window.localStorage) {
       localStorage.setItem('mabu_active_tab', tab);
     }
