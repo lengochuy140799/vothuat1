@@ -199,4 +199,284 @@
       </div>
     </div>
   </div>
+
+  <!-- Main Student Management List Card (Requested by User) -->
+  <div class="bg-white rounded-2xl border border-slate-200/85 p-6 shadow-sm space-y-4">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+      <div>
+        <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
+          <app-icon name="users" class="w-5 h-5 text-indigo-650"></app-icon>
+          <span>Danh Sách Võ Sinh CLB (Cơ sở dữ liệu chính)</span>
+        </h3>
+        <p class="text-[11px] text-slate-500 font-medium mt-0.5">Tìm kiếm, lọc thông tin cấp đai và trực tiếp điều chỉnh hồ sơ võ sinh</p>
+      </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="flex flex-col md:flex-row gap-3 items-center justify-between bg-slate-50 p-4 rounded-xl border border-slate-100">
+      <!-- Search Input -->
+      <div class="relative w-full md:max-w-md">
+        <input 
+          type="text" 
+          [(ngModel)]="searchTerm"
+          (ngModelChange)="onFilterChange()"
+          placeholder="Tìm kiếm theo mã, họ tên hoặc số điện thoại..."
+          class="w-full px-10 py-2.5 border border-slate-200 rounded-xl text-xs bg-white text-slate-800 outline-none focus:border-indigo-500 font-semibold"
+        />
+        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+          <app-icon name="search" class="w-4 h-4"></app-icon>
+        </div>
+      </div>
+
+      <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto items-stretch sm:items-center">
+        <!-- Belt Filter -->
+        <div class="relative min-w-[160px]">
+          <select 
+            [(ngModel)]="selectedBeltFilter"
+            (ngModelChange)="onFilterChange()"
+            class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 cursor-pointer transition outline-none appearance-none pr-10"
+          >
+            <option value="">-- Tất cả cấp đai --</option>
+            <option *ngFor="let b of beltTypes" [value]="b">{{ b }}</option>
+          </select>
+          <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-400">
+            ▼
+          </div>
+        </div>
+
+        <!-- Clear Filter Button -->
+        <button 
+          *ngIf="searchTerm || selectedBeltFilter"
+          (click)="searchTerm = ''; selectedBeltFilter = ''; onFilterChange()"
+          class="px-4 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs rounded-xl transition cursor-pointer"
+        >
+          Xóa Bộ Lọc
+        </button>
+      </div>
+    </div>
+
+    <!-- Student Table Grid -->
+    <div class="overflow-x-auto border border-slate-100 rounded-xl">
+      <table class="w-full text-left border-collapse text-xs">
+        <thead>
+          <tr class="bg-slate-50 text-slate-400 font-bold uppercase tracking-widest text-[10px] border-b border-slate-150">
+            <th class="py-3.5 px-4 font-extrabold">Mã Số</th>
+            <th class="py-3.5 px-4 font-extrabold">Họ Và Tên</th>
+            <th class="py-3.5 px-4 font-extrabold">Giới Tính</th>
+            <th class="py-3.5 px-4 font-extrabold">Ngày Sinh</th>
+            <th class="py-3.5 px-4 font-extrabold">Điện Thoại</th>
+            <th class="py-3.5 px-4 font-extrabold">Cấp Đai</th>
+            <th class="py-3.5 px-4">Địa Chỉ</th>
+            <th class="py-3.5 px-4 text-center font-extrabold">Hành Động</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 font-medium text-slate-700 bg-white">
+          <!-- Empty State -->
+          <tr *ngIf="getFilteredStudents().length === 0">
+            <td colspan="8" class="py-10 text-center text-slate-400 font-semibold bg-white">
+              <app-icon name="users" class="m-auto w-8 h-8 text-slate-300 mb-2"></app-icon>
+              <span>Không tìm thấy võ sinh nào phù hợp bộ lọc</span>
+            </td>
+          </tr>
+
+          <!-- Rows list -->
+          <tr *ngFor="let student of getPaginatedStudents()" class="hover:bg-slate-50 transition-colors bg-white">
+            <td class="py-3.5 px-4 font-mono font-bold text-indigo-700 uppercase tracking-wider">{{ student.id }}</td>
+            <td class="py-3.5 px-4 font-extrabold text-slate-800 text-sm">{{ student.name }}</td>
+            <td class="py-3.5 px-4 text-slate-500">
+              <span [class]="student.gender === 'Nam' ? 'bg-blue-50 text-blue-700' : 'bg-pink-50 text-pink-700'" class="px-2.5 py-1 rounded-full text-[10px] font-bold">
+                {{ student.gender }}
+              </span>
+            </td>
+            <td class="py-3.5 px-4 text-slate-500">{{ student.birth | date:'dd/MM/yyyy' }}</td>
+            <td class="py-3.5 px-4 text-slate-500 font-mono">{{ student.phone }}</td>
+            <td class="py-3.5 px-4">
+              <span class="bg-indigo-50 border border-indigo-100 text-indigo-700 px-2.5 py-1 rounded-lg text-[10px] font-black">
+                🥋 {{ student.currentBelt }}
+              </span>
+            </td>
+            <td class="py-3.5 px-4 text-slate-500 max-w-xs truncate" [title]="student.address || ''">{{ student.address || '—' }}</td>
+            <td class="py-3.5 px-4 text-center">
+              <button 
+                (click)="openEditModal(student)"
+                class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-3.5 py-1.5 rounded-xl font-extrabold text-[10px] tracking-wide inline-flex items-center gap-1 cursor-pointer transition border border-indigo-200"
+              >
+                <app-icon name="edit" class="w-3.5 h-3.5"></app-icon>
+                <span>SỬA</span>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination controls -->
+    <div *ngIf="getFilteredStudents().length > 0" class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
+      <span class="text-xs text-slate-400 font-semibold">
+        Hiển thị {{ (currentPage - 1) * itemsPerPage + 1 }} - {{ getMin(currentPage * itemsPerPage, getFilteredStudents().length) }} trên tổng số {{ getFilteredStudents().length }} võ sinh
+      </span>
+      <div class="flex items-center gap-2">
+        <button 
+          [disabled]="currentPage === 1"
+          (click)="prevPage()"
+          class="px-3.5 py-2 border border-slate-200 rounded-xl bg-white hover:bg-slate-50 disabled:bg-slate-150 disabled:text-slate-400 text-slate-700 font-bold text-xs transition cursor-pointer"
+        >
+          Trang Trước
+        </button>
+        <span class="text-xs font-extrabold text-slate-700 bg-slate-100 px-3 py-2 rounded-xl">
+          Trang {{ currentPage }} / {{ getTotalPages() }}
+        </span>
+        <button 
+          [disabled]="currentPage === getTotalPages()"
+          (click)="nextPage()"
+          class="px-3.5 py-2 border border-slate-200 rounded-xl bg-white hover:bg-slate-50 disabled:bg-slate-150 disabled:text-slate-400 text-slate-700 font-bold text-xs transition cursor-pointer"
+        >
+          Trang Sau
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Student Modal Overlay (No Delete Options) -->
+  <div *ngIf="isEditModalOpen" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
+    <div class="bg-white rounded-2xl shadow-xl max-w-lg w-full overflow-hidden border border-slate-100 animate-slideUp">
+      <!-- Modal Header -->
+      <div class="bg-slate-900 text-white px-6 py-4 flex items-center justify-between">
+        <h3 class="font-bold text-base flex items-center gap-2">
+          <app-icon name="edit" class="w-5 h-5 text-indigo-400"></app-icon>
+          <span>Sửa Hồ Sơ Võ Sĩ - {{ formId }}</span>
+        </h3>
+        <button (click)="closeEditModal()" class="text-slate-400 hover:text-white transition cursor-pointer">
+          <app-icon name="x" class="w-5 h-5"></app-icon>
+        </button>
+      </div>
+
+      <!-- Modal Body Form -->
+      <form (submit)="submitEditForm($event)" class="p-6 space-y-4 text-xs font-semibold text-slate-600 font-sans">
+        <div class="grid grid-cols-2 gap-4">
+          <!-- Student ID (Readonly) -->
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">MÃ SỐ VÕ SINH:</label>
+            <input 
+              type="text" 
+              [value]="formId" 
+              disabled 
+              class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs bg-slate-100 text-slate-400 uppercase tracking-widest font-mono font-bold"
+            />
+          </div>
+
+          <!-- Gym Belt Level -->
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">CẤP ĐAI:</label>
+            <select 
+              [(ngModel)]="formBelt" 
+              name="formBelt"
+              class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-800 cursor-pointer font-bold outline-none"
+            >
+              <option *ngFor="let b of beltTypes" [value]="b">{{ b }}</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Full Name -->
+        <div>
+          <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">HỌ VÀ TÊN VÕ SINH:</label>
+          <input 
+            type="text" 
+            [(ngModel)]="formName" 
+            name="formName"
+            placeholder="Nhập họ tên đầy đủ, ví dụ: Nguyễn Quốc Cường"
+            class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs bg-slate-50 text-slate-800 focus:bg-white outline-none font-bold"
+            required
+          />
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <!-- Gender -->
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">GIỚI TÍNH:</label>
+            <div class="flex items-center gap-4 py-2">
+              <label class="flex items-center gap-2 cursor-pointer font-bold">
+                <input type="radio" [(ngModel)]="formGender" name="formGender" value="Nam" class="w-4 h-4 text-indigo-600 cursor-pointer" />
+                <span>Nam</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer font-bold">
+                <input type="radio" [(ngModel)]="formGender" name="formGender" value="Nữ" class="w-4 h-4 text-indigo-600 cursor-pointer" />
+                <span>Nữ</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Phone Number -->
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">ĐIỆN THOẠI PHỤ HUYNH:</label>
+            <input 
+              type="text" 
+              [(ngModel)]="formPhone" 
+              name="formPhone"
+              placeholder="Ví dụ: 0912..."
+              class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs bg-slate-50 text-slate-800 outline-none font-bold"
+              required
+            />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <!-- Birth -->
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">NGÀY SINH:</label>
+            <input 
+              type="date" 
+              [(ngModel)]="formBirth" 
+              name="formBirth"
+              class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs bg-slate-50 text-slate-800 font-bold"
+              required
+            />
+          </div>
+
+          <!-- Registration date -->
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">NGÀY GHI DANH:</label>
+            <input 
+              type="date" 
+              [(ngModel)]="formRegDate" 
+              name="formRegDate"
+              class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs bg-slate-50 text-slate-800 font-bold"
+              required
+            />
+          </div>
+        </div>
+
+        <!-- Address field -->
+        <div>
+          <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">ĐIỆN THOẠI & ĐỊA CHỈ THƯỜNG TRÚ:</label>
+          <input 
+            type="text" 
+            [(ngModel)]="formAddress" 
+            name="formAddress"
+            placeholder="Số nhà, ngõ ngách, tên đường phường xã..."
+            class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs bg-slate-50 text-slate-800 focus:bg-white outline-none font-bold"
+          />
+        </div>
+
+        <!-- Submit & Cancel Actions -->
+        <div class="flex items-center justify-end gap-3 border-t border-slate-100 pt-5">
+          <button 
+            type="button" 
+            (click)="closeEditModal()" 
+            class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2.5 rounded-xl font-extrabold text-xs transition cursor-pointer"
+          >
+            HỦY BỎ
+          </button>
+          <button 
+            type="submit" 
+            class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-extrabold text-xs transition flex items-center gap-1.5 cursor-pointer shadow-lg shadow-indigo-600/15"
+          >
+            <app-icon name="check" class="w-4 h-4"></app-icon>
+            <span>LƯU THÔNG TIN</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>

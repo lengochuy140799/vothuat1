@@ -36,6 +36,7 @@
             [activeSessionId]="(activeSessionId$ | async) || ''"
             (activeSessionIdChange)="onActiveSessionIdChange($event)"
             (notify)="onNotificationTrigger($event)"
+            (updateStudent)="onUpdateStudent($event)"
           ></app-dashboard>
         </ng-container>
 
