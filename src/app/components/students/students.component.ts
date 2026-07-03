@@ -666,7 +666,7 @@ export class StudentsComponent implements OnInit {
         gender: item.gender || 'Nam',
         birth: item.birth || '2012-01-01',
         phone: item.phone || '0901234567',
-        address: '',
+        address: item.address || '',
         currentBelt: item.currentBelt || 'Đen',
         registrationDate: item.registrationDate || new Date().toISOString().split('T')[0],
         createdAt: new Date().toISOString()

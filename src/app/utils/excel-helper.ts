@@ -4,7 +4,7 @@ import * as XLSX from 'xlsx';
 export class ExcelExporter {
 
   public static exportStudentsToExcel(students: Student[]) {
-    const headers = ['STT', 'Mã Võ Sinh', 'Họ Và Tên', 'Giới Tính', 'Ngày Sinh', 'Số Điện Thoại Phụ Huynh', 'Cấp Đai Hiện Tại', 'Ngày Đăng Ký Hệ Thống'];
+    const headers = ['STT', 'Mã Võ Sinh', 'Họ Và Tên', 'Giới Tính', 'Ngày Sinh', 'Số Điện Thoại Phụ Huynh', 'Địa Chỉ', 'Cấp Đai Hiện Tại', 'Ngày Đăng Ký Hệ Thống'];
     const rows = students.map((student, index) => [
       index + 1,
       student.id,
@@ -12,6 +12,7 @@ export class ExcelExporter {
       student.gender,
       student.birth,
       student.phone,
+      student.address || '',
       student.currentBelt,
       student.registrationDate
     ]);
@@ -167,36 +168,56 @@ export class ExcelExporter {
             return;
           }
 
+          const headers = aoa[0].map((h: any) => String(h || '').trim().toLowerCase());
+          
+          const getColIndex = (keywords: string[], defaultIdx: number): number => {
+            const idx = headers.findIndex((h: string) => keywords.some(k => h.includes(k)));
+            return idx !== -1 ? idx : defaultIdx;
+          };
+
+          const idIdx = getColIndex(['mã võ sinh', 'ma vo sinh', 'mã học viên', 'ma hoc vien'], 1);
+          const nameIdx = getColIndex(['họ và tên', 'ho va ten', 'họ tên', 'ho ten', 'tên', 'ten'], 2);
+          const genderIdx = getColIndex(['giới tính', 'gioi tinh'], 3);
+          const birthIdx = getColIndex(['ngày sinh', 'ngay sinh'], 4);
+          const phoneIdx = getColIndex(['số điện thoại', 'so dien thoai', 'sđt', 'sdt', 'phụ huynh', 'phu huynh'], 5);
+          const addressIdx = getColIndex(['địa chỉ', 'dia chi'], -1);
+          const beltIdx = getColIndex(['cấp đai', 'cap dai', 'đai hiện tại', 'dai hien tai', 'đai', 'dai'], 6);
+          const regDateIdx = getColIndex(['đăng ký', 'dang ky', 'ngày vào', 'ngay vao'], 7);
+
           const imported: Partial<Student>[] = [];
           for (let i = 1; i < aoa.length; i++) {
             const row = aoa[i];
             if (!row || row.length === 0) continue;
 
-            const name = row[2] || row[0] || '';
-            if (!name || String(name).trim() === 'Họ Và Tên') continue; // Skip header replica
+            const name = nameIdx !== -1 && row[nameIdx] ? String(row[nameIdx]).trim() : '';
+            if (!name || name === 'Họ Và Tên') continue; // Skip header replica
 
-            const id = row[1] ? String(row[1]).trim() : `VS-NEW-${Math.floor(Math.random() * 900) + 100}`;
-            const gender = (row[3] === 'Nữ' || row[3] === 'nữ' ? 'Nữ' : 'Nam') as 'Nam' | 'Nữ';
+            const id = idIdx !== -1 && row[idIdx] ? String(row[idIdx]).trim() : `VS-NEW-${Math.floor(Math.random() * 900) + 100}`;
+            const genderValue = genderIdx !== -1 && row[genderIdx] ? String(row[genderIdx]).trim() : '';
+            const gender = (genderValue === 'Nữ' || genderValue === 'nữ' ? 'Nữ' : 'Nam') as 'Nam' | 'Nữ';
             
             let birth = '2012-01-01';
-            if (row[4]) {
-              if (typeof row[4] === 'number') {
-                birth = this.formatExcelDate(row[4]);
+            if (birthIdx !== -1 && row[birthIdx]) {
+              if (typeof row[birthIdx] === 'number') {
+                birth = this.formatExcelDate(row[birthIdx]);
               } else {
-                birth = String(row[4]).trim();
+                birth = String(row[birthIdx]).trim();
               }
             }
 
-            const phone = row[5] ? String(row[5]).trim() : '0901234567';
-            
+            const phone = phoneIdx !== -1 && row[phoneIdx] ? String(row[phoneIdx]).trim() : '0901234567';
+            const address = addressIdx !== -1 && row[addressIdx] ? String(row[addressIdx]).trim() : '';
+
             let currentBelt: BeltType = 'Đen Xanh';
-            const rawBelt = row[6] ? String(row[6]).trim() : '';
+            const rawBelt = beltIdx !== -1 && row[beltIdx] ? String(row[beltIdx]).trim() : '';
             if (rawBelt) {
               const lowerRaw = rawBelt.toLowerCase();
               if (lowerRaw.includes('đen xanh')) currentBelt = 'Đen Xanh';
+              else if (lowerRaw.includes('đen')) currentBelt = 'Đen';
               else if (lowerRaw.includes('xanh 1')) currentBelt = 'Xanh 1';
               else if (lowerRaw.includes('xanh 2')) currentBelt = 'Xanh 2';
               else if (lowerRaw.includes('xanh 3')) currentBelt = 'Xanh 3';
+              else if (lowerRaw.includes('xanh')) currentBelt = 'Xanh';
               else if (lowerRaw.includes('đỏ 1')) currentBelt = 'Đỏ 1';
               else if (lowerRaw.includes('đỏ 2')) currentBelt = 'Đỏ 2';
               else if (lowerRaw.includes('đỏ 3')) currentBelt = 'Đỏ 3';
@@ -210,11 +231,11 @@ export class ExcelExporter {
             }
 
             let regDate = new Date().toISOString().split('T')[0];
-            if (row[7]) {
-              if (typeof row[7] === 'number') {
-                regDate = this.formatExcelDate(row[7]);
+            if (regDateIdx !== -1 && row[regDateIdx]) {
+              if (typeof row[regDateIdx] === 'number') {
+                regDate = this.formatExcelDate(row[regDateIdx]);
               } else {
-                regDate = String(row[7]).trim();
+                regDate = String(row[regDateIdx]).trim();
               }
             }
 
@@ -224,6 +245,7 @@ export class ExcelExporter {
               gender,
               birth,
               phone,
+              address,
               currentBelt,
               registrationDate: regDate
             });
@@ -242,12 +264,34 @@ export class ExcelExporter {
     const lines = text.split(/\r?\n/);
     if (lines.length < 2) return [];
 
+    const firstLine = lines[0].trim();
+    const delimiter = firstLine.includes('\t') ? '\t' : ',';
+    const headers = firstLine.split(delimiter).map(col => {
+      let val = col.trim();
+      if (val.startsWith('"') && val.endsWith('"')) {
+        val = val.substring(1, val.length - 1).replace(/""/g, '"');
+      }
+      return val.toLowerCase();
+    });
+
+    const getColIndex = (keywords: string[], defaultIdx: number): number => {
+      const idx = headers.findIndex((h: string) => keywords.some(k => h.includes(k)));
+      return idx !== -1 ? idx : defaultIdx;
+    };
+
+    const idIdx = getColIndex(['mã võ sinh', 'ma vo sinh', 'mã học viên', 'ma hoc vien'], 1);
+    const nameIdx = getColIndex(['họ và tên', 'ho va ten', 'họ tên', 'ho ten', 'tên', 'ten'], 2);
+    const genderIdx = getColIndex(['giới tính', 'gioi tinh'], 3);
+    const birthIdx = getColIndex(['ngày sinh', 'ngay sinh'], 4);
+    const phoneIdx = getColIndex(['số điện thoại', 'so dien thoai', 'sđt', 'sdt', 'phụ huynh', 'phu huynh'], 5);
+    const addressIdx = getColIndex(['địa chỉ', 'dia chi'], -1);
+    const beltIdx = getColIndex(['cấp đai', 'cap dai', 'đai hiện tại', 'dai hien tai', 'đai', 'dai'], 6);
+    const regDateIdx = getColIndex(['đăng ký', 'dang ky', 'ngày vào', 'ngay vao'], 7);
+
     const imported: Partial<Student>[] = [];
     for (let i = 1; i < lines.length; i++) {
       const line = lines[i].trim();
       if (!line) continue;
-      
-      const delimiter = line.includes('\t') ? '\t' : ',';
       
       const columns = line.split(delimiter).map(col => {
         let val = col.trim();
@@ -258,22 +302,27 @@ export class ExcelExporter {
       });
 
       if (columns.length >= 2) {
-        if (columns[0] === 'STT' || columns[2] === 'Họ Và Tên') continue; // Skip header
+        const nameVal = nameIdx !== -1 && columns[nameIdx] ? columns[nameIdx] : '';
+        if (nameVal === 'STT' || nameVal === 'Họ Và Tên') continue; // Skip header
 
-        const id = columns[1] || `VS-NEW-${Math.floor(Math.random() * 900) + 100}`;
-        const name = columns[2] || columns[0] || 'Chưa đặt tên';
-        const gender = (columns[3] === 'Nữ' || columns[3] === 'nữ' ? 'Nữ' : 'Nam') as 'Nam' | 'Nữ';
-        const birth = columns[4] || '2012-01-01';
-        const phone = columns[5] || '0901234567';
+        const id = idIdx !== -1 && columns[idIdx] ? columns[idIdx] : `VS-NEW-${Math.floor(Math.random() * 900) + 100}`;
+        const name = nameVal || 'Chưa đặt tên';
+        const genderValue = genderIdx !== -1 && columns[genderIdx] ? columns[genderIdx] : '';
+        const gender = (genderValue === 'Nữ' || genderValue === 'nữ' ? 'Nữ' : 'Nam') as 'Nam' | 'Nữ';
+        const birth = birthIdx !== -1 && columns[birthIdx] ? columns[birthIdx] : '2012-01-01';
+        const phone = phoneIdx !== -1 && columns[phoneIdx] ? columns[phoneIdx] : '0901234567';
+        const address = addressIdx !== -1 && columns[addressIdx] ? columns[addressIdx] : '';
         
         let currentBelt: BeltType = 'Đen Xanh';
-        const rawBelt = columns[6] || '';
+        const rawBelt = beltIdx !== -1 && columns[beltIdx] ? columns[beltIdx] : '';
         if (rawBelt) {
           const lowerRaw = rawBelt.toLowerCase();
           if (lowerRaw.includes('đen xanh')) currentBelt = 'Đen Xanh';
+          else if (lowerRaw.includes('đen')) currentBelt = 'Đen';
           else if (lowerRaw.includes('xanh 1')) currentBelt = 'Xanh 1';
           else if (lowerRaw.includes('xanh 2')) currentBelt = 'Xanh 2';
           else if (lowerRaw.includes('xanh 3')) currentBelt = 'Xanh 3';
+          else if (lowerRaw.includes('xanh')) currentBelt = 'Xanh';
           else if (lowerRaw.includes('đỏ 1')) currentBelt = 'Đỏ 1';
           else if (lowerRaw.includes('đỏ 2')) currentBelt = 'Đỏ 2';
           else if (lowerRaw.includes('đỏ 3')) currentBelt = 'Đỏ 3';
@@ -286,7 +335,7 @@ export class ExcelExporter {
           else if (lowerRaw.includes('trắng')) currentBelt = 'Trắng';
         }
 
-        let regDate = columns[7] || new Date().toISOString().split('T')[0];
+        let regDate = regDateIdx !== -1 && columns[regDateIdx] ? columns[regDateIdx] : new Date().toISOString().split('T')[0];
 
         imported.push({
           id,
@@ -294,6 +343,7 @@ export class ExcelExporter {
           gender,
           birth,
           phone,
+          address,
           currentBelt,
           registrationDate: regDate
         });
@@ -303,10 +353,10 @@ export class ExcelExporter {
   }
 
   public static downloadSampleExcel() {
-    const headers = ['STT', 'Mã Võ Sinh', 'Họ Và Tên', 'Giới Tính', 'Ngày Sinh (YYYY-MM-DD)', 'Số Điện Thoại Phụ Huynh', 'Cấp Đai Hiện Tại', 'Ngày Đăng Ký Hệ Thống (YYYY-MM-DD)'];
+    const headers = ['STT', 'Mã Võ Sinh', 'Họ Và Tên', 'Giới Tính', 'Ngày Sinh (YYYY-MM-DD)', 'Số Điện Thoại Phụ Huynh', 'Địa Chỉ', 'Cấp Đai Hiện Tại', 'Ngày Đăng Ký Hệ Thống (YYYY-MM-DD)'];
     const sampleRows = [
-      [1, 'VS-2026-001', 'Nguyễn Quốc Bình', 'Nam', '2014-05-12', '0914115115', 'Trắng', '2026-06-05'],
-      [2, 'VS-2026-002', 'Lê Quỳnh Chi', 'Nữ', '2015-08-20', '0988222333', 'Vàng', '2026-06-05']
+      [1, 'VS-2026-001', 'Nguyễn Quốc Bình', 'Nam', '2014-05-12', '0914115115', '123 Đường Ba Tháng Hai, Quận 10, TP.HCM', 'Trắng', '2026-06-05'],
+      [2, 'VS-2026-002', 'Lê Quỳnh Chi', 'Nữ', '2015-08-20', '0988222333', '456 Lê Hồng Phong, Quận 5, TP.HCM', 'Vàng', '2026-06-05']
     ];
 
     const worksheetData = [headers, ...sampleRows];
