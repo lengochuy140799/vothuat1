@@ -49,11 +49,29 @@ export const appReducer = createReducer(
   }),
 
   // Student Actions
-  on(AppActions.addStudent, (state, { student }) => {
+  on(AppActions.addStudent, (state, { student, month }) => {
     const filtered = state.students.filter(s => s.id !== student.id);
+    let newRegistrations = [...state.registrations];
+    if (month) {
+      const exists = state.registrations.some(r => r.studentId === student.id && r.month === month);
+      if (!exists) {
+        const newReg: Registration = {
+          id: `REG-${month.replace(/\//g, '')}-${student.id.replace(/-/g, '')}`,
+          studentId: student.id,
+          month: month,
+          currentBelt: student.currentBelt,
+          targetBelt: student.currentBelt,
+          examFee: 0,
+          paymentStatus: 'UNPAID',
+          createdAt: new Date().toISOString()
+        };
+        newRegistrations = [newReg, ...newRegistrations];
+      }
+    }
     return {
       ...state,
-      students: [student, ...filtered]
+      students: [student, ...filtered],
+      registrations: newRegistrations
     };
   }),
 
@@ -83,12 +101,32 @@ export const appReducer = createReducer(
     registrations: state.registrations.filter(r => r.studentId !== id)
   })),
 
-  on(AppActions.bulkImportStudents, (state, { students }) => {
+  on(AppActions.bulkImportStudents, (state, { students, month }) => {
     const existingIds = new Set(state.students.map(s => s.id));
     const uniqueNew = students.filter(s => !existingIds.has(s.id));
+    let newRegistrations = [...state.registrations];
+    if (month) {
+      students.forEach(s => {
+        const exists = state.registrations.some(r => r.studentId === s.id && r.month === month);
+        if (!exists) {
+          const newReg: Registration = {
+            id: `REG-${month.replace(/\//g, '')}-${s.id.replace(/-/g, '')}`,
+            studentId: s.id,
+            month: month,
+            currentBelt: s.currentBelt,
+            targetBelt: s.currentBelt,
+            examFee: 0,
+            paymentStatus: 'UNPAID',
+            createdAt: new Date().toISOString()
+          };
+          newRegistrations = [newReg, ...newRegistrations];
+        }
+      });
+    }
     return {
       ...state,
-      students: [...uniqueNew, ...state.students]
+      students: [...uniqueNew, ...state.students],
+      registrations: newRegistrations
     };
   }),
 

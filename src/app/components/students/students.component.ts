@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Student, Registration, BeltType } from '../../../types';
@@ -35,7 +35,7 @@ export interface MonthlyBillingItem {
   templateUrl: './students.component.html',
   styleUrls: ['./students.component.css']
 })
-export class StudentsComponent implements OnInit {
+export class StudentsComponent implements OnInit, OnChanges {
   @Input() students: Student[] = [];
   @Input() registrations: Registration[] = [];
   
@@ -90,6 +90,12 @@ export class StudentsComponent implements OnInit {
 
   ngOnInit() {
     this.initializeMonthlyData();
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['students'] || changes['registrations']) {
+      this.initializeMonthlyData();
+    }
   }
 
   initializeMonthlyData() {
